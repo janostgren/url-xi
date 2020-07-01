@@ -1,0 +1,28 @@
+{
+    "testName": "Ticketmonster Get Event",
+    "variables": [
+        {
+            "name": "eventId","type":"string"
+        }
+    ],
+    "baseUrl": "http://ticketmonster.apicasystem.com",
+    "steps": [
+        {
+            "stepName": "Get Events",
+            "request": {
+                "method": "get",
+                "path": "/ticket-monster/rest/events"
+            },
+            "extractors": [
+                {"type":"json","expression":"$.[*].id","variable":"eventId"}
+            ]
+        },
+        {
+            "stepName": "Get Events details",
+            "request": {
+                "method": "get",
+                "path": "/ticket-monster/rest/events/1"
+            }
+        }
+    ]
+}
