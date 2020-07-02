@@ -2,7 +2,16 @@
     "testName": "Ticketmonster Get Event",
     "variables": [
         {
-            "name": "eventId","type":"string"
+            "key": "eventId","type":"number","usage":"","value":1
+        },
+        {
+            "key": "sections","type":"number","usage":"inResponse","value":0
+        },
+        {
+            "key": "capacity","type":"number","usage":"returnValue","value":0
+        },
+        {
+            "key": "venueName","type":"string","usage":"info","value":""
         }
     ],
     "baseUrl": "http://ticketmonster.apicasystem.com",
@@ -14,15 +23,20 @@
                 "path": "/ticket-monster/rest/events"
             },
             "extractors": [
-                {"type":"json","expression":"$.[*].id","variable":"eventId"}
+                {"type":"jsonpath","expression":"$[*].id","variable":"eventId"}
             ]
         },
         {
-            "stepName": "Get Events details",
+            "stepName": "Get Shows",
             "request": {
                 "method": "get",
-                "path": "/ticket-monster/rest/events/1"
-            }
+                "path": "/ticket-monster/rest/shows?event=1"
+            },
+            "extractors": [
+                {"type":"jsonpath","expression":"$..venue.name","variable":"venueName"},
+                {"type":"jsonpath","expression":"$..venue.capacity","variable":"capacity"},
+                {"type":"jsonpath","expression":"$..venue.sections[*].id","variable":"sections","counter":true}
+            ]
         }
     ]
 }
