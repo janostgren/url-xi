@@ -63,10 +63,10 @@ class TestRunner {
                 console.log("path=%s",path)
                 /*
                 if(request.path)
-                    config.url=request.path
+                    config.url=path
                 response = await api.request(config)
                 */
-               response = await api.get(request.path)
+               response = await api.get(path)
                 if (response) {
                     //console.debug(response.data)
                     if (testStep.extractors) {
@@ -78,8 +78,6 @@ class TestRunner {
                                 if (this._debug)
                                     console.debug(extractor)
                                 let jp = jsonPath.query(response.data, extractor.expression)
-                                if (this._debug)
-                                    console.debug(jp, jp.length)
                                 if (jp) {
                                     if (extractor.counter)
                                         value = jp.length

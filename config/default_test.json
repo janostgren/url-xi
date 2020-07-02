@@ -8,7 +8,7 @@
             "key": "sections","type":"number","usage":"inResponse","value":0
         },
         {
-            "key": "capacity","type":"number","usage":"returnValue","value":0
+            "key": "capacity","type":"number","usage":"returnValue","value":0,"unit":"seats"
         },
         {
             "key": "venueName","type":"string","usage":"info","value":""
@@ -30,7 +30,7 @@
             "stepName": "Get Shows",
             "request": {
                 "method": "get",
-                "path": "/ticket-monster/rest/shows?event=2"
+                "path": "/ticket-monster/rest/shows?event={{eventId}}"
             },
             "extractors": [
                 {"type":"jsonpath","expression":"$..venue.name","variable":"venueName"},

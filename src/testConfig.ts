@@ -81,9 +81,8 @@ export class TestConfig {
     }
     public replaceWithVarVaule(str: string) {
         let vars: Map<string, IVariable> = this._varMap
-        let val = str.replace(/{{(\\w+)}}/gm, function (x: string, y: string) {
+        let val = str.replace(/{{([A-Za-z_]\w+)}}/gm, function (x: string, y: string) {
            
-        
             let ret: string = ""
             let v = vars.get(y)
             if (v) {
