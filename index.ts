@@ -27,10 +27,14 @@ async function run (conf_dir:string,test_config:string,debug:boolean) {
     console.info("conf_dir=%s, test_config=%s", conf_dir, test_config);
     let testConfig:TestConfig = new TestConfig(debug);
     await testConfig.create(conf_dir, test_config);
+    let s= testConfig.replaceWithVarVaule("event={{enventId}}")
+    console.log(s)
+    /*
     let resultProccessor:TestResultProcessor = new TestResultProcessor(testConfig,debug)
     let testRunner:TestRunner = new TestRunner(testConfig,debug);
 
     await testRunner.run(resultProccessor);
     await resultProccessor.createResults();
+    */
 };
 

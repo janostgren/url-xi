@@ -30,7 +30,7 @@
             "stepName": "Get Shows",
             "request": {
                 "method": "get",
-                "path": "/ticket-monster/rest/shows?event=1"
+                "path": "/ticket-monster/rest/shows?event=2"
             },
             "extractors": [
                 {"type":"jsonpath","expression":"$..venue.name","variable":"venueName"},
