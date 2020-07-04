@@ -54,7 +54,7 @@ export class Api {
      * @memberof Api
      */
     public getUri (config?: AxiosRequestConfig): string {
-        return this.api.api.getUri(config);
+        return this.api.getUri(config);
     }
 
     /**
@@ -79,7 +79,7 @@ export class Api {
      *
      */
     public request<T, R = AxiosResponse<T>> (config: AxiosRequestConfig): Promise<R> {
-        return this.api.api.request(config);
+        return this.api.request(config);
     }
 
     /**

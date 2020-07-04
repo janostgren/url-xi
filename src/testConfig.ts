@@ -59,38 +59,37 @@ export class TestConfig {
         if (this.configData.variables) {
             for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
                 let v: IVariable = this.configData.variables[idx]
-                this._varMap.set(v.key,v)
+                this._varMap.set(v.key, v)
             }
         }
     }
     public setVariableValue(key: string, value: any) {
         if (this.configData.variables) {
-            /*
-            for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
-                let v: IVariable = this.configData.variables[idx]
-                if (v.key === key) {
-                    v.value = value
-                    break;
-                }
-            }*/
-            let v =this._varMap.get(key)
-            if(v) {
-                v.value=value
+            let v = this._varMap.get(key)
+            if (v) {
+                v.value = value
             }
         }
     }
     public replaceWithVarVaule(str: string) {
         let vars: Map<string, IVariable> = this._varMap
-        let val = str.replace(/{{([A-Za-z_]\w+)}}/gm, function (x: string, y: string) {
-           
+        let val = str.replace(/{{(\$?[A-Za-z_]\w+)}}/gm, function (x: string, y: string) {
+
             let ret: string = ""
-            let v = vars.get(y)
-            if (v) {
-                ret = v.value.toString()
+            switch (y) {
+                case "$timestamp":
+                    ret = Date.now().toString()
+                    break
+                default:
+                    let v = vars.get(y)
+                    if (v) {
+                        ret = v.value.toString()
+                    }
             }
+            
             return ret
         })
-        
+       
         return val ? val : str
     }
 

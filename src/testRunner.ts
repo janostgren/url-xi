@@ -16,6 +16,13 @@ class TestRunner {
         if (this._debug)
             console.debug("TestRunner %s started...", this._testConfig.configData.testName);
         try {
+            let config: AxiosRequestConfig = {
+                baseURL: this._testConfig.configData.baseUrl,
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+            let api: Api = new Api(config);
             for (let idx: number = 0; idx < this._testConfig.configData.steps.length; idx++) {
                 let testStep: ITestStep = this._testConfig.configData.steps[idx];
                 if (this._debug)
@@ -50,23 +57,15 @@ class TestRunner {
                         method = "link"
                         break
                 }
-               
-                let config: AxiosRequestConfig = {
-                    baseURL: this._testConfig.configData.baseUrl,
-                    method:method,
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
+                let stepConfig: AxiosRequestConfig = {
+                    method: method
                 }
-                let api: Api = new Api(config);
-                let path:string = this._testConfig.replaceWithVarVaule(request.path)
-                console.log("path=%s",path)
-                /*
-                if(request.path)
-                    config.url=path
-                response = await api.request(config)
-                */
-               response = await api.get(path)
+                let path: string = this._testConfig.replaceWithVarVaule(request.path)
+
+                if (request.path)
+                    stepConfig.url = path
+                response = await api.request(stepConfig)
+
                 if (response) {
                     //console.debug(response.data)
                     if (testStep.extractors) {
