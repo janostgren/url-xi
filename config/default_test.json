@@ -2,7 +2,7 @@
     "testName": "Ticketmonster Get Event",
     "variables": [
         {
-            "key": "eventId","type":"number","usage":"","value":1
+            "key": "eventId","type":"number","usage":"","value":0
         },
         {
             "key": "sections","type":"number","usage":"inResponse","value":0
@@ -14,13 +14,17 @@
             "key": "venueName","type":"string","usage":"info","value":""
         }
     ],
-    "baseUrl": "http://ticketmonster.apicasystem.com",
+    "baseURL": "http://ticketmonster.apicasystem.com",
+    "config":{
+       
+    },
     "steps": [
         {
             "stepName": "Get Events",
             "request": {
                 "method": "get",
-                "path": "/ticket-monster/rest/events?_={{$timestamp}}"
+                "url": "/ticket-monster/rest/events",
+                "params": {"_":"{{$timestamp}}"}
             },
             "extractors": [
                 {"type":"jsonpath","expression":"$[*].id","variable":"eventId"}
@@ -30,7 +34,9 @@
             "stepName": "Get Shows",
             "request": {
                 "method": "get",
-                "path": "/ticket-monster/rest/shows?_={{$timestamp}}&event={{eventId}}"
+               
+                "url": "/ticket-monster/rest/shows",
+                "params": {"_":"{{$timestamp}}","event":"{{eventId}}"}
             },
             "extractors": [
                 {"type":"jsonpath","expression":"$..venue.name","variable":"venueName"},

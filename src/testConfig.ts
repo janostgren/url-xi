@@ -1,11 +1,27 @@
 import fs from 'fs';
 import util from 'util';
+import {AxiosResponse,Method } from 'axios'
 
-
-export interface IHttpRequest {
-    method: string,
-    path: string
+export interface IBasicAuth {
+    username: string,
+    password: string
 }
+
+export interface IRequestConfig {
+    method?: Method,
+    url?: string,
+    headers?: any
+    data?: any,
+    params?: any
+    auth?: any
+}
+
+/*
+export interface IHttpRequest extends IRequestConfig {
+   
+}
+*/
+
 export type ExtractorType = 'jsonpath' | 'xpath' | 'regexp'
 
 export interface IExtractor {
@@ -16,7 +32,7 @@ export interface IExtractor {
 }
 export interface ITestStep {
     stepName: string,
-    request: IHttpRequest,
+    request: IRequestConfig,
     extractors?: IExtractor[]
 }
 
@@ -33,10 +49,15 @@ export interface IVariable {
 
 export interface ITestConfigData {
     testName: string,
-    variables?: IVariable[]
-    baseUrl: string
+    variables?: IVariable[],
+    baseURL: string,
+    config?: IRequestConfig
     steps: ITestStep[]
 
+}
+export interface IStepResult {
+    response:AxiosResponse,
+    duration:number
 }
 
 
@@ -54,8 +75,7 @@ export class TestConfig {
         let content = await (await readFile(pathName)).toString();
 
         this.configData = JSON.parse(content)
-        if (this._debug)
-            console.debug("TestConfig: content=%s", this.configData)
+        
         if (this.configData.variables) {
             for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
                 let v: IVariable = this.configData.variables[idx]
@@ -63,6 +83,8 @@ export class TestConfig {
             }
         }
     }
+   
+
     public setVariableValue(key: string, value: any) {
         if (this.configData.variables) {
             let v = this._varMap.get(key)
@@ -86,14 +108,12 @@ export class TestConfig {
                         ret = v.value.toString()
                     }
             }
-            
+
             return ret
         })
-       
         return val ? val : str
     }
-
 }
 
-//export=TestConfig
+
 

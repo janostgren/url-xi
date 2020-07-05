@@ -1,0 +1,55 @@
+{
+    "testName": "AppDynamics Metrics",
+    "variables": [
+        {
+            "key": "output",
+            "type": "string",
+            "usage": "",
+            "value": "json"
+        },
+        {
+            "key": "applicationId",
+            "type": "string",
+            "usage": "",
+            "value": ""
+        },
+        {
+            "key": "applicationName",
+            "type": "string",
+            "usage": "",
+            "value": ""
+        }
+    ],
+    "baseURL": "https://apica-nfr.saas.appdynamics.com/controller/rest",
+    "config": {
+        "auth": {
+            "username": "ticketmonster@apica-nfr",
+            "password": "8BOAK37P"
+        }
+    },
+    "steps": [
+        {
+            "stepName": "Get Applications",
+            "request": {
+                "method": "get",
+                "url": "/applications",
+                "params": {
+                    "output": "{{output}}"
+                }
+            },
+            "extractors": [
+                {
+                    "type": "jsonpath",
+                    "expression": "$[*].id",
+                    "variable": "applicationId"
+                },
+                {
+                    "type": "jsonpath",
+                    "expression": "$[*].name",
+                    "variable": "applicationName"
+                }
+            ]
+           
+        }
+    ]
+}
