@@ -15,10 +15,13 @@ export class TestResultProcessor {
 
     public async createResults() {
         console.log("----- Process results [%s] ----\n",this._testConfig.configData.testName)
+        let returnValue:number= -666555444
         if (this._testConfig.configData.variables) {
             for (let idx: number = 0; idx < this._testConfig.configData.variables.length; idx++) {
                 let variable:IVariable=this._testConfig.configData.variables[idx]
                  console.log("variable: %s",variable) 
+                 if(variable.type==='number' && variable.usage==='returnValue')
+                    returnValue=variable.value
             }
         }
         let totalDuration:number=0
@@ -39,6 +42,7 @@ export class TestResultProcessor {
         console.log("---------------------- [Summary] ---------------------------------")
         console.log("Total Response Time: %d",totalDuration)
         console.log("Number of steps: %d",this._testConfig.configData.steps.length)
+        console.log("Return value: %d", returnValue != -666555444?returnValue:totalDuration)
     }
 
     public addApiResponse (idx:number,response:IStepResult) {

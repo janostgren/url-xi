@@ -2,6 +2,12 @@
     "testName": "AppDynamics Metrics",
     "variables": [
         {
+            "key": "responseTime","type":"number","usage":"returnValue","value":0,"unit":"ms"
+        },
+        {
+            "key": "metricName","type":"string","usage":"info","value":"","unit":""
+        },
+        {
             "key": "output",
             "type": "string",
             "usage": "",
@@ -15,6 +21,24 @@
         },
         {
             "key": "applicationName",
+            "type": "string",
+            "usage": "",
+            "value": ""
+        },
+        {
+            "key": "transactionId",
+            "type": "string",
+            "usage": "",
+            "value": ""
+        },
+        {
+            "key": "tierName",
+            "type": "string",
+            "usage": "",
+            "value": ""
+        },
+        {
+            "key": "transactionName",
             "type": "string",
             "usage": "",
             "value": ""
@@ -48,6 +72,64 @@
                     "expression": "$[*].name",
                     "variable": "applicationName"
                 }
+            ]
+           
+        },
+        {
+            "stepName": "Get Transactions",
+            "request": {
+                "method": "get",
+                "url": "/applications/{{applicationId}}/business-transactions",
+                "params": {
+                    "output": "{{output}}",
+                    "time-range-type": "BEFORE_NOW",
+                    "duration-in-mins": 30
+                }
+            },
+            "extractors": [
+                {
+                    "type": "jsonpath",
+                    "expression": "$[*].id",
+                    "variable": "transactionId"
+                },
+                {
+                    "type": "jsonpath",
+                    "expression": "$[*].name",
+                    "variable": "transactionName"
+                },
+                {
+                    "type": "jsonpath",
+                    "expression": "$[*].tierName",
+                    "variable": "tierName"
+                }
+            ]
+           
+        },
+        {
+            "stepName": "Get BT Average response time",
+            "request": {
+                "method": "get",
+                "url": "/applications/{{applicationId}}/metric-data",
+                "params": {
+                    "metric-path":"Business Transaction Performance|Business Transactions|{{tierName}}|{{transactionName}}|Average Response Time (ms)",
+                    "output": "{{output}}",
+                    "time-range-type": "BEFORE_NOW",
+                    "duration-in-mins": 600,
+                    "rollup":true
+                }
+            },
+            "extractors": [
+                {
+                    "type": "jsonpath",
+                    "expression": "$[0].metricName",
+                    "variable": "metricName"
+                },
+                {
+                    "type": "jsonpath",
+                    "expression": "$[0].metricValues[0].value",
+                    "variable": "responseTime"
+                }
+             
             ]
            
         }
