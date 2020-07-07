@@ -5,7 +5,7 @@
             "key": "email",
             "type": "string",
             "usage": "",
-            "value": "kalle@acme.org"
+            "value": "'kalle@acme.org'"
         },
         {
             "key": "eventId",
@@ -132,7 +132,6 @@
             "request": {
                 "method": "delete",
                 "url": "/ticket-monster/rest/bookings/{{bookingId}}"
-                
             }
         }
     ]

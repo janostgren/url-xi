@@ -1,6 +1,9 @@
 import { TestConfig, ITestConfigData, ITestStep, IExtractor, IRequestConfig, IStepResult } from './testConfig'
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method, AxiosError } from 'axios'
 import jsonPath from 'jsonpath';
+import xpath from 'xpath';
+import xmldom from 'xmldom'
+
 
 
 import { Api } from './api';
@@ -42,45 +45,84 @@ class TestRunner {
                     console.debug("Running step %s ", testStep.stepName)
 
                 let request: IRequestConfig = testStep.request
+                if (request.data && Array.isArray(request.data)) {
+                    request.data = request.data.join("")
+                }
                 let response: AxiosResponse = JSON.parse("{}");
 
 
                 let stepConfig: AxiosRequestConfig = this.setConfigValues(request)
-                let start:number=Date.now()
+                let start: number = Date.now()
                 try {
                     response = await api.request(stepConfig)
                 }
                 catch (error) {
-                    let stepResult:IStepResult ={response:error.response,duration:Date.now() - start}
-                    
+                    let stepResult: IStepResult = { response: error.response, duration: Date.now() - start }
+
                     resultProcessor.addApiResponse(idx, stepResult);
                     return;
                 };
 
                 if (response) {
 
-                    let stepResult:IStepResult ={response:response,duration:Date.now() - start}
+                    let stepResult: IStepResult = { response: response, duration: Date.now() - start }
                     resultProcessor.addApiResponse(idx, stepResult)
-                    if (testStep.extractors) {
+
+                    if (response.data && testStep.extractors) {
+                        //let data:string = response.data.toString();
                         let value
                         testStep.extractors.forEach(elem => {
                             value = undefined
-                            let extractor: IExtractor = elem
-                            if (extractor.type.toLowerCase() == "jsonpath") {
+                            try {
+                                let extractor: IExtractor = elem
                                 if (this._debug)
                                     console.debug(extractor)
-                                let jp = jsonPath.query(response.data, extractor.expression)
-                                if (jp) {
-                                    if (extractor.counter)
-                                        value = jp.length
-                                    else
-                                        value = jp[Math.floor(Math.random() * jp.length)];
+                                switch (extractor.type) {
+                                    case "jsonpath":
+
+                                        let jp = jsonPath.query(response.data, extractor.expression)
+                                        if (jp) {
+                                            if (extractor.counter)
+                                                value = jp.length
+                                            else
+                                                value = jp[Math.floor(Math.random() * jp.length)];
+                                        }
+                                        break
+                                    case "xpath":
+                                        let p = new xmldom.DOMParser()
+                                        let xml = p.parseFromString(response.data)
+                                        let nodes = xpath.select(extractor.expression, xml)                         
+                                        if(extractor.counter)
+                                            value=nodes.length
+                                        else if (nodes.length){
+                                            let elem = nodes[Math.floor(Math.random() * nodes.length)];
+                                            value=elem.valueOf().toString()
+                                        }
+                                        break
+                                    case "regexp":
+                                        let regexp: RegExp = new RegExp(extractor.expression, "gm");
+                                        let arr = [...response.data.matchAll(regexp)];
+                                        if (arr) {
+                                            if (extractor.counter)
+                                                value = arr.length
+                                            else if (arr.length > 0) {
+                                                let elem = arr[Math.floor(Math.random() * arr.length)];
+                                                if (elem.length > 1)
+                                                    value = elem.slice(1).join("")
+                                                else
+                                                    value = elem[0]
+
+                                            }
+                                        }
+                                        break
                                 }
-                            }
-                            if (this._debug)
-                                console.debug("extractor value=%s", value)
-                            if (value) {
-                                this._testConfig.setVariableValue(extractor.variable, value)
+                                if (this._debug)
+                                    console.debug("extractor value=%s", value)
+                                if (value) {
+                                    this._testConfig.setVariableValue(extractor.variable, value)
+                                }
+                            } catch (error) {
+                                console.error(error)
                             }
 
                         })

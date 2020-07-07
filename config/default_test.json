@@ -2,7 +2,7 @@
     "testName": "Ticketmonster Get Event",
     "variables": [
         {
-            "key": "eventId","type":"number","usage":"","value":0
+            "key": "eventId","type":"number","usage":"","value":"let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]"
         },
         {
             "key": "sections","type":"number","usage":"inResponse","value":0
@@ -34,7 +34,6 @@
             "stepName": "Get Shows",
             "request": {
                 "method": "get",
-               
                 "url": "/ticket-monster/rest/shows",
                 "params": {"_":"{{$timestamp}}","event":"{{eventId}}"}
             },

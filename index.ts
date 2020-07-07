@@ -23,7 +23,7 @@ run(conf_dir,test_config,debug)
 
 
 async function run (conf_dir:string,test_config:string,debug:boolean) {
-    
+    try {
     let testConfig:TestConfig = new TestConfig(debug);
     await testConfig.create(conf_dir, test_config);
    
@@ -33,6 +33,9 @@ async function run (conf_dir:string,test_config:string,debug:boolean) {
 
     await testRunner.run(resultProccessor);
     await resultProccessor.createResults();
+    } catch(error) {
+        console.error(error)
+    }
     
 };
 

@@ -1,11 +1,6 @@
 import fs from 'fs';
 import util from 'util';
-import {AxiosResponse,Method } from 'axios'
-
-export interface IBasicAuth {
-    username: string,
-    password: string
-}
+import { AxiosResponse, Method } from 'axios'
 
 export interface IRequestConfig {
     method?: Method,
@@ -56,8 +51,8 @@ export interface ITestConfigData {
 
 }
 export interface IStepResult {
-    response:AxiosResponse,
-    duration:number
+    response: AxiosResponse,
+    duration: number
 }
 
 
@@ -75,15 +70,17 @@ export class TestConfig {
         let content = await (await readFile(pathName)).toString();
 
         this.configData = JSON.parse(content)
-        
+
         if (this.configData.variables) {
             for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
                 let v: IVariable = this.configData.variables[idx]
+                if (v.value )
+                    v.value = eval(v.value)
                 this._varMap.set(v.key, v)
             }
         }
     }
-   
+
 
     public setVariableValue(key: string, value: any) {
         if (this.configData.variables) {

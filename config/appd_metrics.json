@@ -11,13 +11,19 @@
             "key": "output",
             "type": "string",
             "usage": "",
-            "value": "json"
+            "value": "'json'"
         },
         {
             "key": "applicationId",
             "type": "string",
             "usage": "",
             "value": ""
+        },
+        {
+            "key": "duration_in_mins",
+            "type": "number",
+            "usage": "",
+            "value": 600
         },
         {
             "key": "applicationName",
@@ -72,8 +78,7 @@
                     "expression": "$[*].name",
                     "variable": "applicationName"
                 }
-            ]
-           
+            ] 
         },
         {
             "stepName": "Get Transactions",
@@ -83,7 +88,7 @@
                 "params": {
                     "output": "{{output}}",
                     "time-range-type": "BEFORE_NOW",
-                    "duration-in-mins": 30
+                    "duration-in-mins": "{{duration_in_mins}}"
                 }
             },
             "extractors": [
@@ -102,8 +107,7 @@
                     "expression": "$[*].tierName",
                     "variable": "tierName"
                 }
-            ]
-           
+            ]    
         },
         {
             "stepName": "Get BT Average response time",
@@ -114,7 +118,7 @@
                     "metric-path":"Business Transaction Performance|Business Transactions|{{tierName}}|{{transactionName}}|Average Response Time (ms)",
                     "output": "{{output}}",
                     "time-range-type": "BEFORE_NOW",
-                    "duration-in-mins": 600,
+                    "duration-in-mins": "{{duration_in_mins}}",
                     "rollup":true
                 }
             },
@@ -129,9 +133,7 @@
                     "expression": "$[0].metricValues[0].value",
                     "variable": "responseTime"
                 }
-             
-            ]
-           
+            ] 
         }
     ]
 }
