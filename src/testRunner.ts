@@ -4,8 +4,6 @@ import jsonPath from 'jsonpath';
 import xpath from 'xpath';
 import xmldom from 'xmldom'
 
-
-
 import { Api } from './api';
 import { TestResultProcessor } from './testResultProcessor';
 class TestRunner {
@@ -43,14 +41,11 @@ class TestRunner {
                 let testStep: ITestStep = this._testConfig.configData.steps[idx];
                 if (this._debug)
                     console.debug("Running step %s ", testStep.stepName)
-
                 let request: IRequestConfig = testStep.request
                 if (request.data && Array.isArray(request.data)) {
                     request.data = request.data.join("")
                 }
                 let response: AxiosResponse = JSON.parse("{}");
-
-
                 let stepConfig: AxiosRequestConfig = this.setConfigValues(request)
                 let start: number = Date.now()
                 try {
@@ -64,12 +59,10 @@ class TestRunner {
                 };
 
                 if (response) {
-
                     let stepResult: IStepResult = { response: response, duration: Date.now() - start }
                     resultProcessor.addApiResponse(idx, stepResult)
 
                     if (response.data && testStep.extractors) {
-                        //let data:string = response.data.toString();
                         let value
                         testStep.extractors.forEach(elem => {
                             value = undefined
@@ -111,7 +104,6 @@ class TestRunner {
                                                     value = elem.slice(1).join("")
                                                 else
                                                     value = elem[0]
-
                                             }
                                         }
                                         break
@@ -124,7 +116,6 @@ class TestRunner {
                             } catch (error) {
                                 console.error(error)
                             }
-
                         })
                     }
                 }
@@ -133,12 +124,9 @@ class TestRunner {
             if (error instanceof Error) {
                 ;
             }
-
             console.error(error)
-
         }
     }
-
 }
 
 export =TestRunner;

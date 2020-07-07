@@ -12,12 +12,6 @@ export interface IRequestConfig {
     auth?: any
 }
 
-/*
-export interface IHttpRequest extends IRequestConfig {
-   
-}
-*/
-
 export type ExtractorType = 'jsonpath' | 'xpath' | 'regexp'
 
 export interface IExtractor {
@@ -56,7 +50,6 @@ export interface IStepResult {
     duration: number
 }
 
-
 export class TestConfig {
     private _debug: boolean = false;
     private _varMap: Map<string, IVariable> = new Map<string, IVariable>();
@@ -83,7 +76,6 @@ export class TestConfig {
         }
     }
 
-
     public setVariableValue(key: string, value: any) {
         if (this.configData.variables) {
             let v = this._varMap.get(key)
@@ -107,12 +99,8 @@ export class TestConfig {
                         ret = v.value.toString()
                     }
             }
-
             return ret
         })
         return val ? val : str
     }
 }
-
-
-

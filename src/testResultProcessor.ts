@@ -20,13 +20,10 @@ interface ITestResults {
     testName: string,
     variables?: IVariable[],
     baseURL: string,
-
     stepResults: IXStepResult[]
     totalDuration: number
     returnValue: number
-
 }
-
 
 export class TestResultProcessor {
     private _debug: boolean = false;
@@ -40,7 +37,6 @@ export class TestResultProcessor {
         let result: IStepResult = JSON.parse("{}");
         for (let idx: number = 0; idx < this._testConfig.configData.steps.length; idx++)
             this._apiResults.push(result);
-
     }
 
     public async createResults() {
@@ -51,9 +47,6 @@ export class TestResultProcessor {
 
         let resultName = "res_" + uuidv4() + ".json"
         let resultFile = path.resolve(this._result_dir, resultName)
-
-        //let content = await (await readFile(pathName)).toString();
-
 
         console.log("----- Process results [%s] ----\n", this._testConfig.configData.testName)
 
@@ -72,11 +65,7 @@ export class TestResultProcessor {
             let step: ITestStep = this._testConfig.configData.steps[idx]
             console.log("Step Name [%s]", step.stepName)
             let stepResult: IStepResult = this._apiResults[idx]
-           
-            
-            
             if (stepResult) {
-                
                 console.log(stepResult.response.config)
                 console.log("status=%d %s", stepResult.response.status, stepResult.response.statusText)
                 console.log(stepResult.response.data)
@@ -92,7 +81,6 @@ export class TestResultProcessor {
                 xstepResult.config = stepResult.response.config
                 results.stepResults.push(xstepResult);
             }
-
         }
         console.log("---------------------- [Summary] ---------------------------------")
         console.log("Total Response Time: %d", totalDuration)
