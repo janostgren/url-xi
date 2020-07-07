@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path'
 import util from 'util';
 import { AxiosResponse, Method } from 'axios'
 
@@ -64,8 +65,9 @@ export class TestConfig {
         this._debug = debug
 
     }
-    public async create(dir: string, config: String) {
-        let pathName: string = `${dir}/${config}`;
+    public async create(dir: string, config: string) {
+        
+        let pathName:string=path.resolve(dir, config);
         let readFile = util.promisify(fs.readFile);
         let content = await (await readFile(pathName)).toString();
 

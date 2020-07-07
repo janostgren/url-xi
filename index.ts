@@ -17,18 +17,19 @@ program
 program.parse(process.argv);
 let conf_dir: string = program.dir;
 let test_config: string = program.config;
+let result_dir: string = program.results;
 let debug: boolean = program.debug
 
-run(conf_dir,test_config,debug)
+run(conf_dir,test_config,result_dir,debug)
 
 
-async function run (conf_dir:string,test_config:string,debug:boolean) {
+async function run (conf_dir:string,test_config:string,result_dir:string,debug:boolean) {
     try {
     let testConfig:TestConfig = new TestConfig(debug);
     await testConfig.create(conf_dir, test_config);
    
     
-    let resultProccessor:TestResultProcessor = new TestResultProcessor(testConfig,debug)
+    let resultProccessor:TestResultProcessor = new TestResultProcessor(testConfig,result_dir,debug)
     let testRunner:TestRunner = new TestRunner(testConfig,debug);
 
     await testRunner.run(resultProccessor);
