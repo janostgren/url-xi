@@ -1,5 +1,7 @@
 import { TestConfig, ITestConfigData, ITestStep, IExtractor, IVariable, IStepResult } from './testConfig'
+
 import { AxiosResponse, AxiosRequestConfig } from 'axios'
+import {TestBase} from './testbase'
 import uuid from "uuid"
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
@@ -25,15 +27,16 @@ interface ITestResults {
     returnValue: number
 }
 
-export class TestResultProcessor {
-    private _debug: boolean = false;
+export class TestResultProcessor extends TestBase{
+   
     private _testConfig: TestConfig;
     private _result_dir: string
     private _apiResults: IStepResult[] = []
     constructor(config: TestConfig, result_dir: string, debug: boolean = false) {
+        super(debug)
         this._testConfig = config
         this._result_dir = result_dir
-        this._debug = debug
+       
         let result: IStepResult = JSON.parse("{}");
         for (let idx: number = 0; idx < this._testConfig.configData.steps.length; idx++)
             this._apiResults.push(result);
@@ -69,8 +72,6 @@ export class TestResultProcessor {
                 console.log(stepResult.response.config)
                 console.log("status=%d %s", stepResult.response.status, stepResult.response.statusText)
                 console.log(stepResult.response.data)
-                //console.log(response.headers)
-                console.log("response time=%d", )
                 totalDuration += stepResult.duration
                 let xstepResult:IXStepResult ={"step":step,"duration":stepResult.duration}
                 xstepResult.config = stepResult.response.config

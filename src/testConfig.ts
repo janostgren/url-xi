@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path'
 import util from 'util';
 import { AxiosResponse, Method } from 'axios'
+import { TestBase } from './testbase'
 
 export interface IRequestConfig {
     method?: Method,
@@ -43,33 +44,43 @@ export interface ITestConfigData {
     baseURL: string,
     config?: IRequestConfig
     steps: ITestStep[]
-
 }
+
 export interface IStepResult {
     response: AxiosResponse,
     duration: number
 }
 
-export class TestConfig {
-    private _debug: boolean = false;
+export class TestConfig extends TestBase {
     private _varMap: Map<string, IVariable> = new Map<string, IVariable>();
+    private _headers: any
     configData: ITestConfigData = {} as any;
-    constructor(debug: boolean = false) {
-        this._debug = debug
-
+    constructor(headers: any, debug: boolean = false) {
+        super(debug)
+        this._headers = headers
     }
     public async create(dir: string, config: string) {
-        
-        let pathName:string=path.resolve(dir, config);
+        let pathName: string = ""
+        let dirName= path.dirname(config)
+        pathName=dirName==='.' ?path.resolve(dir, config):config
+
         let readFile = util.promisify(fs.readFile);
         let content = await (await readFile(pathName)).toString();
-
         this.configData = JSON.parse(content)
+        if(!this.configData?.config)
+            this.configData.config=JSON.parse("{}")
+        if (this.configData.config?.headers)
+            this.configData.config.headers = Object.assign(this.configData.config.headers, this._headers)
+        else if(this.configData.config)
+            this.configData.config.headers =this._headers
+            
+        this._logger.debug("config:",this.configData.config)
+
 
         if (this.configData.variables) {
             for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
                 let v: IVariable = this.configData.variables[idx]
-                if (v.value )
+                if (v.value)
                     v.value = eval(v.value)
                 this._varMap.set(v.key, v)
             }
@@ -87,7 +98,6 @@ export class TestConfig {
     public replaceWithVarVaule(str: string) {
         let vars: Map<string, IVariable> = this._varMap
         let val = str.replace(/{{(\$?[A-Za-z_]\w+)}}/gm, function (x: string, y: string) {
-
             let ret: string = ""
             switch (y) {
                 case "$timestamp":

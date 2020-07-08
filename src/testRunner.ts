@@ -1,17 +1,18 @@
 import { TestConfig, ITestConfigData, ITestStep, IExtractor, IRequestConfig, IStepResult } from './testConfig'
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method, AxiosError } from 'axios'
+import {TestBase} from './testbase'
 import jsonPath from 'jsonpath';
 import xpath from 'xpath';
 import xmldom from 'xmldom'
 
 import { Api } from './api';
 import { TestResultProcessor } from './testResultProcessor';
-class TestRunner {
-    private _debug: boolean = false;
+class TestRunner extends TestBase{
+    
     private _testConfig: TestConfig
     constructor(config: TestConfig, debug: boolean = false) {
+        super(debug)
         this._testConfig = config
-        this._debug = debug
     }
 
     public setConfigValues(config: IRequestConfig) {
@@ -22,8 +23,7 @@ class TestRunner {
     }
 
     public async run(resultProcessor: TestResultProcessor) {
-        if (this._debug)
-            console.debug("TestRunner %s started...", this._testConfig.configData.testName);
+        this._logger.debug("TestRunner %s started...", this._testConfig.configData.testName);
         try {
             let config: AxiosRequestConfig = {
             }
@@ -39,8 +39,8 @@ class TestRunner {
             let api: Api = new Api(config);
             for (let idx: number = 0; idx < this._testConfig.configData.steps.length; idx++) {
                 let testStep: ITestStep = this._testConfig.configData.steps[idx];
-                if (this._debug)
-                    console.debug("Running step %s ", testStep.stepName)
+                
+                this._logger.debug("Running step %s ", testStep.stepName)
                 let request: IRequestConfig = testStep.request
                 if (request.data && Array.isArray(request.data)) {
                     request.data = request.data.join("")
@@ -108,23 +108,19 @@ class TestRunner {
                                         }
                                         break
                                 }
-                                if (this._debug)
-                                    console.debug("extractor value=%s", value)
+                                this._logger.debug("extractor value=%s", value)
                                 if (value) {
                                     this._testConfig.setVariableValue(extractor.variable, value)
                                 }
                             } catch (error) {
-                                console.error(error)
+                                this._logger.error(error)
                             }
                         })
                     }
                 }
             }
         } catch (error) {
-            if (error instanceof Error) {
-                ;
-            }
-            console.error(error)
+            this._logger.error(error)
         }
     }
 }

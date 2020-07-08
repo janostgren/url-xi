@@ -1,1 +1,76 @@
-url.xi repo
+# URL-XI - Extended URL Rest Tester
+Can be used to test/monitor REST based API-s and ordinary HTML based request.
+Supports all http requests GET,PUT,DELETE,POST, HEAD and OPTIONS.
+
+Url-xi is simpilar to POSTMAN and using the same concept, but has better support for a flow of request and correlation of request. It can also return other metrics than response times of the http requests. 
+## System requirements
+- Node js : Must be installed
+## Installation
+Clone from Github or install from npm with 'npm install url-xi'  
+
+## Concept
+A test case configuration is defined in a JSON file. The configuration can contain several http requests and you can chain them to flow of request with correlation between the requests. Status and response time is reported for each request.
+## Correlation/Validation of responses
+Extractors are used for correlation of request and for validation of response. 
+The following type of extractors are supported:
+- JSONPath
+- XPath
+- Regexp
+
+``` json
+"extractors": [
+                {
+                    "type": "xpath",
+                    "expression": "//*[local-name() = 'GameId']/text()",
+                    "variable": "gameId"
+                },
+                {
+                    "type": "regexp",
+                    "expression": "b:GameId>(\\d+)<",
+                    "variable": "gameId2"
+                }
+            ]
+
+```
+
+
+## Variables
+Variables are used for storing values of exctractors or as input parameters.
+``` json
+ "variables": [
+        {
+            "key": "eventId","type":"number","usage":"","value":"let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]"
+        },
+        {
+            "key": "sections","type":"number","usage":"inResponse","value":0
+        },
+        {
+            "key": "capacity","type":"number","usage":"returnValue","value":0,"unit":"seats"
+        },
+        {
+            "key": "venueName","type":"string","usage":"info","value":""
+        }
+    ]
+```
+## Running an URL-XI test
+node dist/index.js   -c config/tm_order_tickets.json 
+or
+bin/url-xi.sh config/tm_order_tickets.json 
+```
+jostgren:url-xi janostgren$ node dist/index.js   -h
+Usage: index [options]
+
+Options:
+  -V, --version              output the version number
+  -c, --config <config>      test configuration (default: "default_test.json")
+  -d, --dir <dir>            configuration dir (default: "./config")
+  -r, --results <dir>        results dir (default: "./results")
+  -xh, --xheaders <headers>  extra headers (default: "{}")
+  -d, --debug                output extra debugging
+  -h, --help                 display help for command
+
+```
+
+
+
+
