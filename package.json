@@ -1,6 +1,6 @@
 {
-  "name": "url-xi",
-  "version": "1.0.1",
+  "name": "url-xi2",
+  "version": "1.0.0",
   "description": "URL Check for integrations",
   "main": "index.js",
   "scripts": {
