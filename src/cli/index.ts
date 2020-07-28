@@ -5,13 +5,14 @@ import TestRunner from '../processor/testRunner'
 import { TestResultProcessor } from '../processor/testResultProcessor';
 import { configure, getLogger, Logger } from "log4js";
 
-let logConfig: string = "./config/log4js.json"
+let logConfig: string = `${__dirname}/../../config/log4js.json`
+/*
 if (process.platform === 'win32')
     logConfig = ".\\config\\log4js.json"
-
+*/
 configure(logConfig)
 let logger = getLogger('app')
-let version="1.1.1"
+let version="1.1.5"
 
 let program = new Command();
 program.version(version);
