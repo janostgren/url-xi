@@ -24,7 +24,7 @@ class TestRunner extends TestBase{
     }
 
     public async run(resultProcessor: TestResultProcessor) {
-        this._logger.debug("TestRunner %s started...", this._testConfig.configData.testName);
+        
         try {
             let config: AxiosRequestConfig = {
             }
@@ -69,8 +69,7 @@ class TestRunner extends TestBase{
                             value = undefined
                             try {
                                 let extractor: IExtractor = elem
-                                if (this._debug)
-                                    console.debug(extractor)
+                               
                                 switch (extractor.type) {
                                     case "jsonpath":
 
@@ -109,7 +108,7 @@ class TestRunner extends TestBase{
                                         }
                                         break
                                 }
-                                this._logger.debug("extractor value=%s", value)
+                                this._logger.trace("extractor value=%s", value)
                                 if (value) {
                                     this._testConfig.setVariableValue(extractor.variable, value)
                                 }

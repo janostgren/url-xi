@@ -14,10 +14,16 @@ export class TestConfig extends TestBase {
         super(debug)
         this._headers = headers
     }
+
     public async createFromFile(pathName: string) {
         
         let readFile = util.promisify(fs.readFile);
         let content = await (await readFile(pathName)).toString();
+        this.create(content)
+    }
+
+    public async create(content:string) {
+        
         this.configData = JSON.parse(content)
         if(!this.configData?.config)
             this.configData.config=JSON.parse("{}")
@@ -26,8 +32,7 @@ export class TestConfig extends TestBase {
         else if(this.configData.config)
             this.configData.config.headers =this._headers
             
-        this._logger.debug("config:",this.configData.config)
-
+        this._logger.trace("config:",this.configData.config)
 
         if (this.configData.variables) {
             for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
@@ -39,6 +44,7 @@ export class TestConfig extends TestBase {
         }
     }
 
+
     public setVariableValue(key: string, value: any) {
         if (this.configData.variables) {
             let v = this._varMap.get(key)
@@ -47,6 +53,8 @@ export class TestConfig extends TestBase {
             }
         }
     }
+
+    
     public replaceWithVarVaule(str: string) {
         let vars: Map<string, IVariable> = this._varMap
         let val = str.replace(/{{(\$?[A-Za-z_]\w+)}}/gm, function (x: string, y: string) {

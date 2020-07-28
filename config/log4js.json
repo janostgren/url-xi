@@ -1,11 +1,6 @@
 {
     "appenders": {
-      "access": {
-        "type": "dateFile",
-        "filename": "log/access.log",
-        "pattern": "-yyyy-MM-dd",
-        "category": "http"
-      },
+
       "app": {
         "type": "file",
         "filename": "log/app.log",
@@ -28,7 +23,6 @@
 
     },
     "categories": {
-      "default": { "appenders": [ "app", "errors","out" ], "level": "DEBUG" },
-      "http": { "appenders": [ "access"], "level": "DEBUG" }
+      "default": { "appenders": [ "app", "errors","out" ], "level": "DEBUG" }
     }
   }

@@ -40,7 +40,9 @@
             "program": "${workspaceFolder}/dist/cli/index.js",
             "args": [
                 "-f",
-                "samples/tm_order_tickets.json"
+                "samples/tm_order_tickets.json",
+                "-r",
+                "./results"
             ],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
