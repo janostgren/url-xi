@@ -20,10 +20,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/dist/index.js",
+            "program": "${workspaceFolder}/dist/cli/index.js",
             "args": [
-                "--config",
-                "default_test.json",
+                "-f",
+                "samples/default_test.json",
                 "--debug"
             ],
             "outFiles": [
@@ -37,10 +37,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/dist/index.js",
+            "program": "${workspaceFolder}/dist/cli/index.js",
             "args": [
-                "--config",
-                "tm_order_tickets.json"
+                "-f",
+                "samples/tm_order_tickets.json"
             ],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
@@ -53,10 +53,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/dist/index.js",
+            "program": "${workspaceFolder}/dist/cli/index.js",
             "args": [
-                "--config",
-                "appd_metrics.json"
+                "--file",
+                "samples/internal/appd_metrics.json"
             ],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
@@ -69,10 +69,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/dist/index.js",
+            "program": "${workspaceFolder}/dist/cli/index.js",
             "args": [
-                "--config",
-                "cldemo_soap_game_service.json"
+                "--file",
+                "samples/cldemo_soap_game_service.json"
             ],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"

@@ -1,11 +1,12 @@
-import { TestConfig, ITestConfigData, ITestStep, IExtractor, IRequestConfig, IStepResult } from './testConfig'
+import { ITestConfigData, ITestStep, IExtractor, IRequestConfig, IStepResult } from '../model/ITestConfig'
+import { TestConfig} from '../config/testConfig'
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method, AxiosError } from 'axios'
-import {TestBase} from './testbase'
+import {TestBase} from '../lib/testbase'
 import jsonPath from 'jsonpath';
 import xpath from 'xpath';
 import xmldom from 'xmldom'
 
-import { Api } from './api';
+import { Api } from '../lib/api';
 import { TestResultProcessor } from './testResultProcessor';
 class TestRunner extends TestBase{
     

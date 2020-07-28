@@ -1,10 +1,13 @@
 {
-  "name": "url-xi2",
+  "name": "url-xi",
   "version": "1.1.1",
   "description": "URL Check for integrations",
-  "main": "index.js",
+  "main": "dist/cli/index.js",
   "scripts": {
-    "test": "node ./dist/index.js --debug"
+    "test": "node ./dist/cli/index.js --debug -f samples/default_test.json"
+  },
+  "bin": {
+    "url-xi": "./dist/cli/index.js"
   },
   "author": "Jan Ostgren",
   "license": "ISC",

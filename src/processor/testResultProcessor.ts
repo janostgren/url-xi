@@ -1,20 +1,22 @@
-import { TestConfig, ITestConfigData, ITestStep, IExtractor, IVariable, IStepResult } from './testConfig'
+
+import { TestConfig } from '../config/testConfig'
+import { ITestConfigData, ITestStep, IExtractor, IVariable, IStepResult } from '../model/ITestConfig'
 
 import { AxiosResponse, AxiosRequestConfig } from 'axios'
-import {TestBase} from './testbase'
+import { TestBase } from '../lib/testbase'
 import uuid from "uuid"
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path'
 import util from 'util';
 
-interface IXStepResult  {
+interface IXStepResult {
     step: ITestStep
-    config?:AxiosRequestConfig
-    data?:any
-    headers?:any
-    status?:number
-    statusText?:string
+    config?: AxiosRequestConfig
+    data?: any
+    headers?: any
+    status?: number
+    statusText?: string
     duration: number
 }
 
@@ -27,8 +29,8 @@ interface ITestResults {
     returnValue: number
 }
 
-export class TestResultProcessor extends TestBase{
-   
+export class TestResultProcessor extends TestBase {
+
     private _testConfig: TestConfig;
     private _result_dir: string
     private _apiResults: IStepResult[] = []
@@ -36,7 +38,7 @@ export class TestResultProcessor extends TestBase{
         super(debug)
         this._testConfig = config
         this._result_dir = result_dir
-       
+
         let result: IStepResult = JSON.parse("{}");
         for (let idx: number = 0; idx < this._testConfig.configData.steps.length; idx++)
             this._apiResults.push(result);
@@ -53,17 +55,17 @@ export class TestResultProcessor extends TestBase{
 
         console.log("----- Process results [%s] ----\n", this._testConfig.configData.testName)
 
-        let returnValue: number = -666555444
+        let returnValue: any = undefined
         if (this._testConfig.configData.variables) {
             for (let idx: number = 0; idx < this._testConfig.configData.variables.length; idx++) {
                 let variable: IVariable = this._testConfig.configData.variables[idx]
                 console.log("variable: %s", variable)
                 if (variable.type === 'number' && variable.usage === 'returnValue')
-                    returnValue = variable.value
+                    returnValue = Number(variable.value)
             }
         }
         let totalDuration: number = 0
-        results.stepResults =[]
+        results.stepResults = []
         for (let idx: number = 0; idx < this._testConfig.configData.steps.length; idx++) {
             let step: ITestStep = this._testConfig.configData.steps[idx]
             console.log("Step Name [%s]", step.stepName)
@@ -73,12 +75,12 @@ export class TestResultProcessor extends TestBase{
                 console.log("status=%d %s", stepResult.response.status, stepResult.response.statusText)
                 console.log(stepResult.response.data)
                 totalDuration += stepResult.duration
-                let xstepResult:IXStepResult ={"step":step,"duration":stepResult.duration}
+                let xstepResult: IXStepResult = { "step": step, "duration": stepResult.duration }
                 xstepResult.config = stepResult.response.config
-                xstepResult.status=stepResult.response.status
-                xstepResult.statusText=stepResult.response.statusText
-                xstepResult.headers= stepResult.response.headers
-                xstepResult.data=stepResult.response.data
+                xstepResult.status = stepResult.response.status
+                xstepResult.statusText = stepResult.response.statusText
+                xstepResult.headers = stepResult.response.headers
+                xstepResult.data = stepResult.response.data
                 xstepResult.config = stepResult.response.config
                 results.stepResults.push(xstepResult);
             }
@@ -86,10 +88,12 @@ export class TestResultProcessor extends TestBase{
         console.log("---------------------- [Summary] ---------------------------------")
         console.log("Total Response Time: %d", totalDuration)
         console.log("Number of steps: %d", this._testConfig.configData.steps.length)
-        returnValue != -666555444 ? returnValue : totalDuration
-        console.log("Return value: %d", returnValue )
-        results.totalDuration=totalDuration
-        results.returnValue=returnValue
+       
+        if (typeof returnValue !== 'number')
+            returnValue = totalDuration
+        console.log("Return value: %d", returnValue)
+        results.totalDuration = totalDuration
+        results.returnValue = returnValue
         let writeFile = util.promisify(fs.writeFile);
         await writeFile(resultFile, JSON.stringify(results))
     }

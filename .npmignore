@@ -3,3 +3,7 @@ log
 package-lock.json
 results
 src/*
+tsconfig.json
+samples/internal
+.vscode
+.git
