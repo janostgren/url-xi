@@ -69,24 +69,26 @@ export class TestResultProcessor extends TestBase {
         this._results.stepResults = []
         for (let idx: number = 0; idx < this._testConfig.steps.length; idx++) {
             let step: ITestStep = this._testConfig.steps[idx]
-           
+
             let stepResult: IStepResult = this._apiResults[idx]
             if (stepResult) {
-                console.log(stepResult.response.config)
-                console.log("status=%d %s", stepResult.response.status, stepResult.response.statusText)
-                console.log(stepResult.response.data)
                 totalDuration += stepResult.duration
-                let xstepResult: IXStepResult = { "step": step, "duration": stepResult.duration }
-                xstepResult.config = stepResult.response.config
-                xstepResult.status = stepResult.response.status
-                xstepResult.statusText = stepResult.response.statusText
-                xstepResult.headers = stepResult.response.headers
-                xstepResult.data = stepResult.response.data
-                xstepResult.config = stepResult.response.config
+                let xstepResult: IXStepResult = { "step": step, "duration": stepResult.duration || 0 }
+                if (stepResult.response) {
+                    xstepResult.config = stepResult.response.config
+                    xstepResult.status = stepResult.response.status
+                    xstepResult.statusText = stepResult.response.statusText
+                    xstepResult.headers = stepResult.response.headers
+                    xstepResult.data = stepResult.response.data
+                }
+                else {
+                    xstepResult.status=-1
+                    xstepResult.statusText="No step result created"
+                }
                 this._results.stepResults.push(xstepResult);
             }
         }
-      
+
         if (typeof returnValue !== 'number')
             returnValue = totalDuration
         this._results.totalDuration = totalDuration
@@ -101,22 +103,22 @@ export class TestResultProcessor extends TestBase {
             console.log("--- Variables values ---")
             for (let idx: number = 0; idx < this._results.variables.length; idx++) {
                 let variable: IVariable = this._results.variables[idx]
-                console.log("\tname=%s , value=%s , usage=%s",variable.key,variable.value,variable.usage || "internal")
+                console.log("\tname=%s , value=%s , usage=%s", variable.key, variable.value, variable.usage || "internal")
             }
             console.log("")
         }
         console.log("--- Steps result ---")
         for (let idx: number = 0; idx < this._results.stepResults.length; idx++) {
             let stepResult: IXStepResult = this._results.stepResults[idx]
-            console.log("\tStep Name [%s] duration=%d", stepResult.step.stepName,stepResult.duration)
-           
+            console.log("\tStep Name [%s] duration=%d", stepResult.step.stepName, stepResult.duration)
+
             console.log("\t\tstatus=%d %s", stepResult.status, stepResult.statusText)
-            
+
         }
         console.log("---------------------- [Test Summary] ---------------------------------")
         console.log("Total Response Time: %d", this._results.totalDuration)
         console.log("Number of steps: %d", this._testConfig.steps.length)
-        console.log("Return value: %d", this._results.returnValue)   
+        console.log("Return value: %d", this._results.returnValue)
     }
 
 

@@ -4,7 +4,8 @@
   "description": "URL Check for integrations",
   "main": "dist/cli/index.js",
   "scripts": {
-    "test": "node ./dist/cli/index.js --debug -f samples/default_test.json -r ./results"
+    "test": "node ./dist/cli/index.js --debug -f samples/default_test.json -r ./results",
+    "clear":"rm ./log/*;rm ./results/*"
   },
   "bin": {
     "url-xi": "./dist/cli/index.js"

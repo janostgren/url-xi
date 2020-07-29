@@ -1,0 +1,47 @@
+{
+    "testName": "Ticketmonster Get Event",
+    "variables": [
+        {
+            "key": "eventId","type":"number","usage":"","value":"let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]"
+        },
+        {
+            "key": "sections","type":"number","usage":"inResponse","value":0
+        },
+        {
+            "key": "capacity","type":"number","usage":"returnValue","value":0,"unit":"seats"
+        },
+        {
+            "key": "venueName","type":"string","usage":"info","value":""
+        }
+    ],
+    "baseURL": "http://ticketmonster2.apicasystem.com",
+    "config":{
+       
+    },
+    "steps": [
+        {
+            "stepName": "Get Events error",
+            "request": {
+                "method": "get",
+                "url": "/ticket-monster/rest/events",
+                "params": {"_":"{{$timestamp}}"}
+            },
+            "extractors": [
+                {"type":"jsonpath","expression":"$[*].id","variable":"eventId"}
+            ]
+        },
+        {
+            "stepName": "Get Shows",
+            "request": {
+                "method": "get",
+                "url": "/ticket-monster/rest/shows",
+                "params": {"_":"{{$timestamp}}","event":"{{eventId}}"}
+            },
+            "extractors": [
+                {"type":"jsonpath","expression":"$..venue.name","variable":"venueName"},
+                {"type":"jsonpath","expression":"$..venue.capacity","variable":"capacity"},
+                {"type":"jsonpath","expression":"$..venue.sections[*].id","variable":"sections","counter":true}
+            ]
+        }
+    ]
+}
