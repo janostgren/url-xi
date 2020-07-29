@@ -1,4 +1,4 @@
-import { AxiosResponse, Method } from 'axios'
+import { AxiosResponse, Method,AxiosError } from 'axios'
 
 export interface IRequestConfig {
     method?: Method,
@@ -43,6 +43,7 @@ export interface ITestConfigData {
 }
 
 export interface IStepResult {
-    response: AxiosResponse,
+    response: AxiosResponse
+    error?:AxiosError
     duration: number
 }

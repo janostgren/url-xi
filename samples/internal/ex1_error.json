@@ -14,7 +14,7 @@
             "key": "venueName","type":"string","usage":"info","value":""
         }
     ],
-    "baseURL": "http://ticketmonster2.apicasystem.com",
+    "baseURL": "http://ticketmonster.apicasystem.com",
     "config":{
        
     },
@@ -35,7 +35,7 @@
             "request": {
                 "method": "get",
                 "url": "/ticket-monster/rest/shows",
-                "params": {"_":"{{$timestamp}}","event":"{{eventId}}"}
+                "params": {"_":"{{$timestamp}}","event":"{{eventId2}"}
             },
             "extractors": [
                 {"type":"jsonpath","expression":"$..venue.name","variable":"venueName"},

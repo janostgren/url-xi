@@ -1,15 +1,15 @@
 import { ITestConfigData, ITestStep, IExtractor, IRequestConfig, IStepResult } from '../model/ITestConfig'
-import { TestConfig} from '../config/testConfig'
+import { TestConfig } from '../config/testConfig'
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method, AxiosError } from 'axios'
-import {TestBase} from '../lib/testbase'
+import { TestBase } from '../lib/testbase'
 import jsonPath from 'jsonpath';
 import xpath from 'xpath';
 import xmldom from 'xmldom'
 
 import { Api } from '../lib/api';
 import { TestResultProcessor } from './testResultProcessor';
-class TestRunner extends TestBase{
-    
+class TestRunner extends TestBase {
+
     private _testConfig: TestConfig
     constructor(config: TestConfig, debug: boolean = false) {
         super(debug)
@@ -24,7 +24,7 @@ class TestRunner extends TestBase{
     }
 
     public async run(resultProcessor: TestResultProcessor) {
-        
+
         try {
             let config: AxiosRequestConfig = {
             }
@@ -40,7 +40,7 @@ class TestRunner extends TestBase{
             let api: Api = new Api(config);
             for (let idx: number = 0; idx < this._testConfig.configData.steps.length; idx++) {
                 let testStep: ITestStep = this._testConfig.configData.steps[idx];
-                
+
                 this._logger.debug("Running step %s ", testStep.stepName)
                 let request: IRequestConfig = testStep.request
                 if (request.data && Array.isArray(request.data)) {
@@ -53,7 +53,14 @@ class TestRunner extends TestBase{
                     response = await api.request(stepConfig)
                 }
                 catch (error) {
-                    let stepResult: IStepResult = { response: error.response, duration: Date.now() - start }
+                    let axError:AxiosError=JSON.parse("{}")
+                    if (!error.response) {
+                        this._logger.fatal(error)
+                        if(error.isAxiosError)
+                        axError=error
+                    }
+                    
+                    let stepResult: IStepResult = { response: error.response, duration: Date.now() - start,error:axError }
 
                     resultProcessor.addApiResponse(idx, stepResult);
                     return;
@@ -69,7 +76,7 @@ class TestRunner extends TestBase{
                             value = undefined
                             try {
                                 let extractor: IExtractor = elem
-                               
+
                                 switch (extractor.type) {
                                     case "jsonpath":
 
@@ -84,12 +91,12 @@ class TestRunner extends TestBase{
                                     case "xpath":
                                         let p = new xmldom.DOMParser()
                                         let xml = p.parseFromString(response.data)
-                                        let nodes = xpath.select(extractor.expression, xml)                         
-                                        if(extractor.counter)
-                                            value=nodes.length
-                                        else if (nodes.length){
+                                        let nodes = xpath.select(extractor.expression, xml)
+                                        if (extractor.counter)
+                                            value = nodes.length
+                                        else if (nodes.length) {
                                             let elem = nodes[Math.floor(Math.random() * nodes.length)];
-                                            value=elem.valueOf().toString()
+                                            value = elem.valueOf().toString()
                                         }
                                         break
                                     case "regexp":
