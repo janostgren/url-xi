@@ -1,0 +1,95 @@
+{
+    "testName": "HTTP-Bin Test HTTP Methods",
+    "variables": [
+        {
+            "key": "server",
+            "type": "string",
+            "usage": "info",
+            "value": ""
+        },
+        {
+            "key": "homePageContent",
+            "type": "string",
+            "usage": "info",
+            "value": ""
+        },
+        {
+            "key": "authenticated",
+            "type": "string",
+            "usage": "info",
+            "value": ""
+        }
+    ],
+    "baseURL": "https://httpbin.org",
+   
+    "config": {
+        "auth": {
+            "username": "foo",
+            "password": "bar"
+        }
+    },
+    "steps": [
+        {
+            "stepName": "Home page",
+            "request": {
+                "method": "get",
+                "url": "/"
+            },
+            
+            "extractors": [
+                {
+                    "type": "header",
+                    "expression": "content-type",
+                    "variable": "homePageContent"
+                }
+            ]
+         
+        },
+        {
+            "stepName": "Get Method",
+            "request": {
+                "method": "get",
+                "url": "/get"
+            },
+            "extractors": [
+                
+                {
+                    "type": "header",
+                    "expression": "server",
+                    "variable": "server"
+                }
+            ]
+        },
+        {
+            "stepName": "Basic Auth",
+            "request": {
+                "method": "get",
+                "url": "/basic-auth/foo/bar"
+                
+            },
+            "extractors": [
+                {
+                    "type": "jsonpath",
+                    "expression": "$.authenticated",
+                    "variable": "authenticated"
+                }
+               
+            ]
+         
+        },
+        {
+            "stepName": "Basic Auth Failed",
+             "expectedStatus": 401,
+            "request": {
+                "method": "get",
+                "url": "/basic-auth/foo/error"
+                
+            },
+            "extractors": [
+               
+            ]
+           
+         
+        }
+    ]
+}

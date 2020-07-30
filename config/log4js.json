@@ -3,13 +3,13 @@
 
       "app": {
         "type": "file",
-        "filename": "log/app.log",
+        "filename": "log/url-xi.log",
         "maxLogSize": 10485760,
         "numBackups": 3
       },
       "errorFile": {
         "type": "file",
-        "filename": "log/errors.log"
+        "filename": "log/url-xi-error.log"
       },
       "errors": {
         "type": "logLevelFilter",

@@ -1,4 +1,5 @@
 import { AxiosResponse, Method,AxiosError } from 'axios'
+import { description } from 'commander'
 
 export interface IRequestConfig {
     method?: Method,
@@ -9,17 +10,27 @@ export interface IRequestConfig {
     auth?: any
 }
 
-export type ExtractorType = 'jsonpath' | 'xpath' | 'regexp'
+export type AssertionType = 'regexp' | 'javaScript' | 'value'
+export interface IAssertion {
+    description:string,
+    type:AssertionType
+    expression:string
+}
+
+export type ExtractorType = 'jsonpath' | 'xpath' | 'regexp'| 'header' | 'cookie'
 
 export interface IExtractor {
-    type: ExtractorType,
-    expression: string,
-    variable: string,
+    type: ExtractorType
+    expression: string
+    variable: string
     counter?: boolean
+    assertion?:IAssertion
+   
 }
 export interface ITestStep {
     stepName: string,
     request: IRequestConfig,
+    expectedStatus?:number
     extractors?: IExtractor[]
 }
 
@@ -46,4 +57,9 @@ export interface IStepResult {
     response: AxiosResponse
     error?:AxiosError
     duration: number
+}
+export interface IAssertionResult {
+    description:string,
+    succcess: boolean
+    info?:string
 }

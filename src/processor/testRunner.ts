@@ -53,14 +53,14 @@ class TestRunner extends TestBase {
                     response = await api.request(stepConfig)
                 }
                 catch (error) {
-                    let axError:AxiosError=JSON.parse("{}")
+                    let axError: AxiosError = JSON.parse("{}")
                     if (!error.response) {
                         this._logger.fatal(error)
-                        if(error.isAxiosError)
-                        axError=error
+                        if (error.isAxiosError)
+                            axError = error
                     }
-                    
-                    let stepResult: IStepResult = { response: error.response, duration: Date.now() - start,error:axError }
+
+                    let stepResult: IStepResult = { response: error.response, duration: Date.now() - start, error: axError }
 
                     resultProcessor.addApiResponse(idx, stepResult);
                     return;
@@ -70,7 +70,7 @@ class TestRunner extends TestBase {
                     let stepResult: IStepResult = { response: response, duration: Date.now() - start }
                     resultProcessor.addApiResponse(idx, stepResult)
 
-                    if (response.data && testStep.extractors) {
+                    if (testStep.extractors) {
                         let value
                         testStep.extractors.forEach(elem => {
                             value = undefined
@@ -79,43 +79,56 @@ class TestRunner extends TestBase {
 
                                 switch (extractor.type) {
                                     case "jsonpath":
-
-                                        let jp = jsonPath.query(response.data, extractor.expression)
-                                        if (jp) {
-                                            if (extractor.counter)
-                                                value = jp.length
-                                            else
-                                                value = jp[Math.floor(Math.random() * jp.length)];
-                                        }
-                                        break
-                                    case "xpath":
-                                        let p = new xmldom.DOMParser()
-                                        let xml = p.parseFromString(response.data)
-                                        let nodes = xpath.select(extractor.expression, xml)
-                                        if (extractor.counter)
-                                            value = nodes.length
-                                        else if (nodes.length) {
-                                            let elem = nodes[Math.floor(Math.random() * nodes.length)];
-                                            value = elem.valueOf().toString()
-                                        }
-                                        break
-                                    case "regexp":
-                                        let regexp: RegExp = new RegExp(extractor.expression, "gm");
-                                        let arr = [...response.data.matchAll(regexp)];
-                                        if (arr) {
-                                            if (extractor.counter)
-                                                value = arr.length
-                                            else if (arr.length > 0) {
-                                                let elem = arr[Math.floor(Math.random() * arr.length)];
-                                                if (elem.length > 1)
-                                                    value = elem.slice(1).join("")
+                                        if (response.data) {
+                                            let jp = jsonPath.query(response.data, extractor.expression)
+                                            if (jp) {
+                                                if (extractor.counter)
+                                                    value = jp.length
                                                 else
-                                                    value = elem[0]
+                                                    value = jp[Math.floor(Math.random() * jp.length)];
                                             }
                                         }
                                         break
+                                    case "xpath":
+                                        if (response.data) {
+                                            let p = new xmldom.DOMParser()
+                                            let xml = p.parseFromString(response.data)
+                                            let nodes = xpath.select(extractor.expression, xml)
+                                            if (extractor.counter)
+                                                value = nodes.length
+                                            else if (nodes.length) {
+                                                let elem = nodes[Math.floor(Math.random() * nodes.length)];
+                                                value = elem.valueOf().toString()
+                                            }
+                                        }
+                                        break
+                                    case "regexp":
+                                        if (response.data) {
+                                            let regexp: RegExp = new RegExp(extractor.expression, "gm");
+                                            let arr = [...response.data.matchAll(regexp)];
+                                            if (arr) {
+                                                if (extractor.counter)
+                                                    value = arr.length
+                                                else if (arr.length > 0) {
+                                                    let elem = arr[Math.floor(Math.random() * arr.length)];
+                                                    if (elem.length > 1)
+                                                        value = elem.slice(1).join("")
+                                                    else
+                                                        value = elem[0]
+                                                }
+                                            }
+                                        }
+                                        break
+                                    case "header":
+                                        let headers=response?.headers 
+                                        if(headers)
+                                        value = headers[extractor.expression]
+                                        break
+                                    case "cookie":
+                                        break
+
                                 }
-                                this._logger.trace("extractor value=%s", value)
+                                this._logger.debug("extractor type=%s expression=%s value=%s", extractor.type, extractor.expression, value)
                                 if (value) {
                                     this._testConfig.setVariableValue(extractor.variable, value)
                                 }

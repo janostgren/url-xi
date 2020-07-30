@@ -12,6 +12,9 @@
         },
         {
             "key": "venueName","type":"string","usage":"info","value":""
+        },
+        {
+            "key": "xPoweredBy","type":"string","usage":"info","value":""
         }
     ],
     "baseURL": "http://ticketmonster.apicasystem.com",
@@ -27,7 +30,8 @@
                 "params": {"_":"{{$timestamp}}"}
             },
             "extractors": [
-                {"type":"jsonpath","expression":"$[*].id","variable":"eventId"}
+                {"type":"jsonpath","expression":"$[*].id","variable":"eventId"},
+                {"type":"header","expression":"x-powered-by","variable":"xPoweredBy"}
             ]
         },
         {

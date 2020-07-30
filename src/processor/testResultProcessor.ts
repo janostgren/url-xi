@@ -1,36 +1,15 @@
 
-import { TestConfig } from '../config/testConfig'
-import { ITestConfigData, ITestStep, IExtractor, IVariable, IStepResult } from '../model/ITestConfig'
 
-import { AxiosResponse, AxiosRequestConfig,AxiosError } from 'axios'
+import { ITestConfigData, ITestStep, IExtractor, IVariable, IStepResult, IAssertionResult } from '../model/ITestConfig'
+import { IXStepResult, ITestResults } from '../model/ITestResult'
+
+import { AxiosResponse, AxiosRequestConfig, AxiosError } from 'axios'
 import { TestBase } from '../lib/testbase'
 import uuid from "uuid"
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path'
 import util from 'util';
-
-interface IXStepResult {
-    step: ITestStep
-    config?: AxiosRequestConfig
-    error?:AxiosError
-    data?: any
-    headers?: any
-    status?: number
-    statusText?: string
-    duration: number
-    success:boolean
-}
-
-interface ITestResults {
-    testName: string,
-    variables?: IVariable[],
-    baseURL: string,
-    stepResults: IXStepResult[]
-    totalDuration: number
-    returnValue: number
-    success:boolean
-}
 
 export class TestResultProcessor extends TestBase {
 
@@ -47,19 +26,19 @@ export class TestResultProcessor extends TestBase {
             this._apiResults.push(result);
     }
 
-    public async saveResults(result_dir: string) {
-        let resultName = "res_" + uuidv4() + ".json"
-        let resultFile = path.resolve(result_dir, resultName)
+    public async saveResults(result_dir: string, resultName?: string) {
+        if (!resultName)
+            resultName = "res_" + uuidv4() 
+        let resultFile = path.resolve(result_dir, resultName+".json")
         let writeFile = util.promisify(fs.writeFile);
         await writeFile(resultFile, JSON.stringify(this._results))
-
     }
 
     public createResults() {
         this._results = JSON.parse("{}")
-        this._results.success=true
         this._results.testName = this._testConfig.testName
         this._results.baseURL = this._testConfig.baseURL
+        this._results.success = true
         this._results.variables = this._testConfig.variables
         let returnValue: any = undefined
         if (this._testConfig.variables) {
@@ -77,22 +56,28 @@ export class TestResultProcessor extends TestBase {
             let stepResult: IStepResult = this._apiResults[idx]
             if (stepResult) {
                 totalDuration += stepResult.duration
-                let xstepResult: IXStepResult = { "step": step, "duration": stepResult.duration,success:false}
+                let xstepResult: IXStepResult = { "step": step, "duration": stepResult.duration, success: false, assertions: [] }
                 if (stepResult.response) {
                     xstepResult.config = stepResult.response.config
                     xstepResult.status = stepResult.response.status
                     xstepResult.statusText = stepResult.response.statusText
                     xstepResult.headers = stepResult.response.headers
                     xstepResult.data = stepResult.response.data
-                    xstepResult.success=(xstepResult.status >= 200 && xstepResult.status <= 299)
+                    xstepResult.success = (xstepResult.status >= 200 && xstepResult.status <= 299)
                 }
                 else {
-                    xstepResult.status=stepResult.error ? -1:0
-                    xstepResult.statusText= stepResult?.error?.message ||"No step result created"
+                    xstepResult.status = stepResult.error ? -1 : 0
+                    xstepResult.statusText = stepResult?.error?.message || "No step result created"
                     xstepResult.error = stepResult.error
                 }
-                if(xstepResult.success === false)
-                    this._results.success=false
+               
+                if(step.expectedStatus)
+                this._logger.debug("expected status=%d,status=%s", step.expectedStatus,xstepResult.status )
+                if (step.expectedStatus && xstepResult.status === step.expectedStatus)
+                    xstepResult.success = true
+
+                if (xstepResult.success === false)
+                    this._results.success = false
                 this._results.stepResults.push(xstepResult);
             }
         }
