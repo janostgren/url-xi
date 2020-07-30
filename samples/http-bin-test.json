@@ -21,13 +21,7 @@
         }
     ],
     "baseURL": "https://httpbin.org",
-   
-    "config": {
-        "auth": {
-            "username": "foo",
-            "password": "bar"
-        }
-    },
+    "config": {},
     "steps": [
         {
             "stepName": "Home page",
@@ -35,7 +29,6 @@
                 "method": "get",
                 "url": "/"
             },
-            
             "extractors": [
                 {
                     "type": "header",
@@ -43,7 +36,6 @@
                     "variable": "homePageContent"
                 }
             ]
-         
         },
         {
             "stepName": "Get Method",
@@ -52,7 +44,6 @@
                 "url": "/get"
             },
             "extractors": [
-                
                 {
                     "type": "header",
                     "expression": "server",
@@ -61,11 +52,27 @@
             ]
         },
         {
+            "stepName": "Basic Auth Failed",
+            "expectedStatus": 401,
+            "request": {
+                "method": "get",
+                "url": "/basic-auth/foo/error",
+                "auth": {
+                    "username": "foo",
+                    "password": "bar"
+                }
+            },
+            "extractors": []
+        },
+        {
             "stepName": "Basic Auth",
             "request": {
                 "method": "get",
-                "url": "/basic-auth/foo/bar"
-                
+                "url": "/basic-auth/foo/bar",
+                "auth": {
+                    "username": "foo",
+                    "password": "bar"
+                }
             },
             "extractors": [
                 {
@@ -73,23 +80,25 @@
                     "expression": "$.authenticated",
                     "variable": "authenticated"
                 }
-               
             ]
-         
         },
+       
         {
-            "stepName": "Basic Auth Failed",
-             "expectedStatus": 401,
+            "stepName": "Bearer Auth",
             "request": {
                 "method": "get",
-                "url": "/basic-auth/foo/error"
-                
+                "url": "/bearer",
+                "headers": {
+                    "Authorization": "Bearer abcd1234"
+                }
             },
             "extractors": [
-               
+                {
+                    "type": "jsonpath",
+                    "expression": "$.authenticated",
+                    "variable": "authenticated"
+                }
             ]
-           
-         
         }
     ]
 }

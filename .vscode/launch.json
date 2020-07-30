@@ -51,14 +51,14 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "AppDynamics Metrics",
+            "name": "Http bin test methods",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/dist/cli/index.js",
             "args": [
                 "--file",
-                "samples/internal/appd_metrics.json"
+                "samples/http-bin-test.json"
             ],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"

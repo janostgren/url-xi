@@ -38,7 +38,8 @@ class TestRunner extends TestBase {
             config.baseURL = this._testConfig.replaceWithVarVaule(this._testConfig.configData.baseURL)
 
             let api: Api = new Api(config);
-            for (let idx: number = 0; idx < this._testConfig.configData.steps.length; idx++) {
+            let foundError:boolean=false
+            for (let idx: number = 0; !foundError && idx < this._testConfig.configData.steps.length; idx++) {
                 let testStep: ITestStep = this._testConfig.configData.steps[idx];
 
                 this._logger.debug("Running step %s ", testStep.stepName)
@@ -53,20 +54,24 @@ class TestRunner extends TestBase {
                     response = await api.request(stepConfig)
                 }
                 catch (error) {
+                    let status:number=0
                     let axError: AxiosError = JSON.parse("{}")
                     if (!error.response) {
+                        status=-1
                         this._logger.fatal(error)
                         if (error.isAxiosError)
                             axError = error
                     }
-
+                    else {
+                        status=error.response.status
+                    }
+                    foundError = (!testStep.expectedStatus && testStep.expectedStatus != status)
+                    
                     let stepResult: IStepResult = { response: error.response, duration: Date.now() - start, error: axError }
-
                     resultProcessor.addApiResponse(idx, stepResult);
-                    return;
                 };
 
-                if (response) {
+                if (response.status) {
                     let stepResult: IStepResult = { response: response, duration: Date.now() - start }
                     resultProcessor.addApiResponse(idx, stepResult)
 
@@ -120,9 +125,9 @@ class TestRunner extends TestBase {
                                         }
                                         break
                                     case "header":
-                                        let headers=response?.headers 
-                                        if(headers)
-                                        value = headers[extractor.expression]
+                                        let headers = response?.headers
+                                        if (headers)
+                                            value = headers[extractor.expression]
                                         break
                                     case "cookie":
                                         break
