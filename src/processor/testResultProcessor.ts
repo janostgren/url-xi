@@ -1,7 +1,7 @@
 
 
-import { ITestConfigData, ITestStep, IExtractor, IVariable, IStepResult, IAssertionResult } from '../model/ITestConfig'
-import { IXStepResult, ITestResults } from '../model/ITestResult'
+import { ITestConfigData, ITestStep, IExtractor, IVariable, IAssertionResult } from '../model/ITestConfig'
+import { ITestResults } from '../model/ITestResult'
 
 import { AxiosResponse, AxiosRequestConfig, AxiosError } from 'axios'
 import { TestBase } from '../lib/testbase'
@@ -15,15 +15,14 @@ export class TestResultProcessor extends TestBase {
 
     private _testConfig: ITestConfigData;
 
-    private _apiResults: IStepResult[] = []
+   
     private _results: ITestResults = JSON.parse("{}")
     constructor(config: ITestConfigData, debug: boolean = false) {
-        super(debug)
+        super(debug,"TestResultProcessor")
         this._testConfig = config
 
-        let result: IStepResult = JSON.parse("{}");
-        for (let idx: number = 0; idx < this._testConfig.steps.length; idx++)
-            this._apiResults.push(result);
+       
+       
     }
 
     public async saveResults(result_dir: string, resultName?: string) {
@@ -35,6 +34,7 @@ export class TestResultProcessor extends TestBase {
     }
 
     public createResults() {
+        /*
         this._results = JSON.parse("{}")
         this._results.testName = this._testConfig.testName
         this._results.baseURL = this._testConfig.baseURL
@@ -87,10 +87,11 @@ export class TestResultProcessor extends TestBase {
         this._results.totalDuration = totalDuration
         this._results.returnValue = returnValue
         return this._results
+    */
     }
 
     public viewResults() {
-
+        /*
         console.log("----- Process results [%s] ----\n", this._testConfig.testName)
         if (this._results.variables) {
             console.log("--- Variables values ---")
@@ -114,10 +115,12 @@ export class TestResultProcessor extends TestBase {
         console.log("Number of steps: %d", this._testConfig.steps.length)
         console.log("Return value: %d", this._results.returnValue)
         console.log("Result success: %s", this._results.success)
+        */
     }
 
-
+    /*
     public addApiResponse(idx: number, response: IStepResult) {
         this._apiResults[idx] = response
     }
+    */
 }

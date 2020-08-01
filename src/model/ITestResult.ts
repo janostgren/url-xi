@@ -1,8 +1,7 @@
-import {AxiosError,AxiosRequestConfig} from 'axios'
+import {AxiosError,AxiosRequestConfig,AxiosResponse} from 'axios'
 import {IAssertionResult,ITestStep,IVariable} from './ITestConfig'
 
-export interface IXStepResult {
-    step: ITestStep
+export interface IRequestResult {
     config?: AxiosRequestConfig
     error?:AxiosError
     data?: any
@@ -11,15 +10,22 @@ export interface IXStepResult {
     statusText?: string
     duration: number
     success:boolean
-    assertions:IAssertionResult[]
 }
+
+export interface IStepResult {
+    success:boolean
+    duration: number
+    requestResults:IRequestResult[]
+    assertions?:IAssertionResult[]
+}
+
 
 export interface ITestResults {
     testName: string,
-    variables?: IVariable[],
     baseURL: string,
-    stepResults: IXStepResult[]
     totalDuration: number
     returnValue: number
     success:boolean
+    variables?: IVariable[],
+    stepResults: IStepResult[]
 }

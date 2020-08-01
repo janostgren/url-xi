@@ -15,11 +15,13 @@ const cliLogConfig =
             "type": "file",
             "filename": "log/url-xi.log",
             "maxLogSize": 10485760,
-            "numBackups": 3
+            "numBackups": 3,
+            "Append":false
         },
         "errorFile": {
             "type": "file",
-            "filename": "log/url-xi-error.log"
+            "filename": "log/url-xi-error.log",
+            "Append":false
         },
         "errors": {
             "type": "logLevelFilter",
@@ -40,6 +42,7 @@ const cliLogConfig =
 
 var test_config: string, result_dir: string, headers: any, debug: boolean
 var parse_only: boolean, resultName: string
+var base_url:string
 var server: string, port: number
 var testfile_path: any
 
@@ -53,6 +56,7 @@ program
     .option('-f, --file <file>', 'test config file')
     .option('-r, --results <dir>', 'results dir')
     .option('-xh, --xheaders <headers>', 'extra headers', '{}')
+    .option('-u, --url <url>', 'base url')
     .option('-d, --debug', 'output extra debugging')
     .option('-po, --parse_only', 'parse json only. No not run')
     .option('-rn, --result_name', 'name of the result')
@@ -66,6 +70,7 @@ program.parse(process.argv);
 test_config = program.file;
 result_dir = program.results;
 headers = JSON.parse(program.xheaders)
+base_url=program.url
 debug = program.debug
 parse_only = program.parse_only
 resultName = program.result_name
@@ -121,12 +126,13 @@ run_cli()
 
 async function run_cli() {
     try {
-        let testConfig: TestConfig = new TestConfig(headers, debug);
+        let testConfig: TestConfig = new TestConfig(headers, base_url,debug);
         await testConfig.createFromFile(test_config);
         if (!parse_only) {
-            let resultProccessor: TestResultProcessor = new TestResultProcessor(testConfig.configData, debug)
+           
             let testRunner: TestRunner = new TestRunner(testConfig, debug);
-            await testRunner.run(resultProccessor);
+            let testResults=await testRunner.run();
+            let resultProccessor: TestResultProcessor = new TestResultProcessor(testConfig.configData, debug)
             resultProccessor.createResults();
             resultProccessor.viewResults();
             if (result_dir) {

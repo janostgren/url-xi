@@ -1,7 +1,15 @@
-import { AxiosResponse, Method,AxiosError } from 'axios'
-import { description } from 'commander'
+import { Method} from 'axios'
+
+export type AssertionType = 'regexp' | 'javaScript' | 'value'
+export interface IAssertion {
+    description:string
+    type:AssertionType
+    expression:string
+    failStep?:boolean
+}
 
 export interface IRequestConfig {
+    
     method?: Method,
     url?: string,
     headers?: any
@@ -9,32 +17,29 @@ export interface IRequestConfig {
     params?: any
     auth?: any
 }
-
-export type AssertionType = 'regexp' | 'javaScript' | 'value'
-export interface IAssertion {
-    description:string,
-    type:AssertionType
-    expression:string
+export interface IRequest {
+    config:IRequestConfig
+    extractors?: IExtractor[]
+    expectedStatus?:number
+    assertions?:IAssertion[]
 }
 
-export type ExtractorType = 'jsonpath' | 'xpath' | 'regexp'| 'header' | 'cookie'
+export type ExtractorType = 'jsonpath' | 'xpath' | 'regexp'| 'header' | 'cookie'|'javaScript'
 
 export interface IExtractor {
     type: ExtractorType
     expression: string
     variable: string
     counter?: boolean
-    assertion?:IAssertion
+    array?:boolean
    
 }
 export interface ITestStep {
     stepName: string,
-    request: IRequestConfig,
-    expectedStatus?:number
-    extractors?: IExtractor[]
+    requests: IRequest[]
 }
 
-export type VariableType = 'string' | 'number'
+export type VariableType = 'string' | 'number' | 'array'
 export type VariableUsage = 'returnValue' | 'inResponse' | 'info' | ''
 
 export interface IVariable {
@@ -53,13 +58,10 @@ export interface ITestConfigData {
     steps: ITestStep[]
 }
 
-export interface IStepResult {
-    response: AxiosResponse
-    error?:AxiosError
-    duration: number
-}
+
 export interface IAssertionResult {
-    description:string,
+    description:string
     succcess: boolean
-    info?:string
+    failStep:boolean
+    actualResult:string
 }

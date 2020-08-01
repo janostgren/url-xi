@@ -3,16 +3,19 @@ import path from 'path'
 import util from 'util';
 import { AxiosResponse, Method } from 'axios'
 import { TestBase } from '../lib/testbase'
-import {IExtractor,IRequestConfig,IStepResult,ITestStep,ITestConfigData,IVariable} from '../model/ITestConfig'
+import {IExtractor,IRequestConfig,ITestStep,ITestConfigData,IVariable} from '../model/ITestConfig'
 
 
 export class TestConfig extends TestBase {
     private _varMap: Map<string, IVariable> = new Map<string, IVariable>();
     private _headers: any
+    private _base_url:string
     configData: ITestConfigData = {} as any;
-    constructor(headers: any, debug: boolean = false) {
-        super(debug)
+    
+    constructor(headers: any, base_url:string='',debug: boolean = false) {
+        super(debug,"TestConfig")
         this._headers = headers
+        this._base_url=base_url
     }
 
     public async createFromFile(pathName: string) {
@@ -27,6 +30,8 @@ export class TestConfig extends TestBase {
         this.configData = JSON.parse(content)
         if(!this.configData?.config)
             this.configData.config=JSON.parse("{}")
+        if(this._base_url)    
+            this.configData.baseURL = this._base_url 
         if (this.configData.config?.headers)
             this.configData.config.headers = Object.assign(this.configData.config.headers, this._headers)
         else if(this.configData.config)
