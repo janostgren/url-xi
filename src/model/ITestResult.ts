@@ -13,8 +13,10 @@ export interface IRequestResult {
 }
 
 export interface IStepResult {
+    stepName:string
     success:boolean
     duration: number
+    ignoreDuration:boolean
     requestResults:IRequestResult[]
     assertions?:IAssertionResult[]
 }

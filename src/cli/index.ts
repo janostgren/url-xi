@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 import { Command } from 'commander';
 import { TestConfig } from '../config/testConfig'
+import { ITestResults} from '../model/ITestResult'
 import TestRunner from '../processor/testRunner'
 import { TestResultProcessor } from '../processor/testResultProcessor';
 import { configure, getLogger, Logger } from "log4js";
@@ -117,7 +118,7 @@ else {
         cliLogConfig.categories.default.level = "DEBUG"
     configure(cliLogConfig)
 }
-var logger = getLogger('app')
+var logger = getLogger('url-xi')
 
 logger.info("url-xi(%s) started with %s", version, process.argv)
 
@@ -131,9 +132,8 @@ async function run_cli() {
         if (!parse_only) {
            
             let testRunner: TestRunner = new TestRunner(testConfig, debug);
-            let testResults=await testRunner.run();
-            let resultProccessor: TestResultProcessor = new TestResultProcessor(testConfig.configData, debug)
-            resultProccessor.createResults();
+            let results:ITestResults=await testRunner.run();
+            let resultProccessor: TestResultProcessor = new TestResultProcessor(results, debug)
             resultProccessor.viewResults();
             if (result_dir) {
                 resultProccessor.saveResults(result_dir,resultName)

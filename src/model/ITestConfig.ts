@@ -35,7 +35,8 @@ export interface IExtractor {
    
 }
 export interface ITestStep {
-    stepName: string,
+    stepName: string
+    ignoreDuration?:boolean
     requests: IRequest[]
 }
 

@@ -1,4 +1,4 @@
-import { ITestConfigData, ITestStep, IExtractor, IRequest, IRequestConfig } from '../model/ITestConfig'
+import { IVariable, ITestStep, IExtractor, IRequest, IRequestConfig } from '../model/ITestConfig'
 import { IRequestResult, IStepResult, ITestResults } from '../model/ITestResult'
 import { TestConfig } from '../config/testConfig'
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method, AxiosError } from 'axios'
@@ -15,7 +15,7 @@ class TestRunner extends TestBase {
 
     private _testConfig: TestConfig
     constructor(config: TestConfig, debug: boolean = false) {
-        super(debug,"TestRunner")
+        super(debug, "TestRunner")
         this._testConfig = config
     }
 
@@ -95,83 +95,85 @@ class TestRunner extends TestBase {
     }
 
     private async runTestStep(step: ITestStep, api: Api) {
-        let stepResult:IStepResult= JSON.parse("{}")
-        stepResult.success=true
-        stepResult.duration =0
-        stepResult.requestResults=[]
+        let stepResult: IStepResult = JSON.parse("{}")
+        stepResult.stepName = step.stepName
+        stepResult.success = true
+        stepResult.duration = 0
+        stepResult.ignoreDuration = step?.ignoreDuration || false
+        stepResult.requestResults = []
         try {
             let foundError: boolean = false
-            
             for (let idx: number = 0; !foundError && idx < step?.requests.length || 0; idx++) {
-                
                 let request: IRequest = step.requests[idx]
                 let config: IRequestConfig = request.config
-                let requestResult:IRequestResult = JSON.parse("{}")
-                requestResult.duration =0
-                requestResult.success=true
+                let requestResult: IRequestResult = JSON.parse("{}")
+                requestResult.duration = 0
+                requestResult.success = true
                 if (config.data && Array.isArray(config.data)) {
                     config.data = config.data.join("")
                 }
                 let response: AxiosResponse = JSON.parse("{}");
                 let stepConfig: AxiosRequestConfig = this.setConfigValues(config)
+                requestResult.config = stepConfig
                 let start: number = Date.now()
-                this._logger.debug("executing request: %s:%s",stepConfig?.method,stepConfig?.url)
-                let status: number = 0
+                this._logger.debug("executing request: %s:%s", stepConfig?.method, stepConfig?.url)
                 let axError: AxiosError = JSON.parse("{}")
                 try {
                     response = await api.request(stepConfig)
                 }
                 catch (error) {
-                   
                     if (!error.response) {
-                        status = -1
+                        let status: number = error.errno || -1
+                        let statusText = error.message
                         this._logger.fatal(error)
                         if (error.isAxiosError)
                             axError = error
-                        
+                        response = JSON.parse("{}")
+                        response.status = status
+                        response.statusText = statusText
                     }
-                    response= error?.response
-                  
-                    foundError = (!request.expectedStatus && request.expectedStatus != status)
-                    
+                    else {
+                        response = error.response
+                    }
+                    foundError = (!request.expectedStatus && request.expectedStatus != response.status)
                 };
                 if (response.status) {
-                   
                     if (request.extractors) {
                         this.extractValues(request.extractors, response)
-
                     }
                 }
+                if (response?.config?.headers)
+                    requestResult.config.headers = response?.config?.headers
+                
+                requestResult.status = response.status
+                requestResult.statusText = response?.statusText
+                requestResult.headers = response.headers
                 requestResult.data = response?.data
-                requestResult.status = status || response.status
-                requestResult.statusText =response?.statusText
-                requestResult.duration = start - Date.now()
-                requestResult.error=axError
+                requestResult.duration = Date.now() - start
+                requestResult.error = axError
                 requestResult.success = !foundError
                 stepResult.requestResults.push(requestResult)
-                stepResult.duration += requestResult.duration  
-                this._logger.debug("Request success=%s",!foundError)
-                if(foundError)
-                    stepResult.success=false
+                stepResult.duration += requestResult.duration
+                this._logger.debug("Request success=%s, status=%d statusText=%s", !foundError, requestResult.status, requestResult.statusText)
+                if (foundError)
+                    stepResult.success = false
             }
-           
         }
         catch (error) {
             this._logger.error(error)
         }
-      
         return stepResult
     }
 
     public async run() {
-        let results:ITestResults= JSON.parse("{}")
-       
+        let results: ITestResults = JSON.parse("{}")
         results.testName = this._testConfig.configData.testName
         results.baseURL = this._testConfig.configData.baseURL
         results.success = true
+        results.returnValue = 0
+        results.totalDuration = 0
         results.variables = this._testConfig.configData?.variables
-        results.stepResults=[]
-
+        results.stepResults = []
         try {
             let config: AxiosRequestConfig = {
             }
@@ -189,16 +191,35 @@ class TestRunner extends TestBase {
             for (let idx: number = 0; !foundError && idx < this._testConfig.configData.steps.length; idx++) {
                 let testStep: ITestStep = this._testConfig.configData.steps[idx];
                 this._logger.debug("Running step %s ", testStep.stepName)
-                let stepResult= await this.runTestStep(testStep,api)
+                let stepResult = await this.runTestStep(testStep, api)
                 foundError = !stepResult.success
-                this._logger.debug("Step success=%s",stepResult.success)
-                results.stepResults.push (stepResult)
-
+                this._logger.debug("Step success=%s, duration=%d", stepResult.success, stepResult.duration)
+                results.stepResults.push(stepResult)
+                if (!stepResult.ignoreDuration)
+                    results.totalDuration += stepResult.duration
             }
             results.success = !foundError
         } catch (error) {
             this._logger.error(error)
         }
+        results.returnValue = results.totalDuration
+        if (results.variables) {
+            let retval = results.variables.find(
+                variable => {
+                    return variable.usage === 'returnValue' &&
+                        variable.type === 'number' &&
+                        Number(variable.value) != NaN
+
+                }
+
+            )
+            if (retval !== undefined) {
+                this._logger.debug("Return value %s", retval.value)
+                results.returnValue = Number(retval.value)
+            }
+        }
+
+        this._logger.debug("Test success=%s, totalDuration=%d", results.success, results.totalDuration)
         return results
     }
 }
