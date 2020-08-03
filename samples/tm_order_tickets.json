@@ -43,96 +43,116 @@
     "steps": [
         {
             "stepName": "Get Events",
-            "request": {
-                "method": "get",
-                "url": "/ticket-monster/rest/events",
-                "params": {
-                    "_": "{{$timestamp}}"
-                }
-            },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "jsonpath",
-                    "expression": "$[*].id",
-                    "variable": "eventId"
+                    "config": {
+                        "method": "get",
+                        "url": "/ticket-monster/rest/events",
+                        "params": {
+                            "_": "{{$timestamp}}"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$[*].id",
+                            "variable": "eventId"
+                        }
+                    ]
                 }
             ]
         },
         {
             "stepName": "Get Shows",
-            "request": {
-                "method": "get",
-                "url": "/ticket-monster/rest/shows",
-                "params": {
-                    "_": "{{$timestamp}}",
-                    "event": "{{eventId}}"
-                }
-            },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "jsonpath",
-                    "expression": "$[*].id",
-                    "variable": "showId"
+                    "config": {
+                        "method": "get",
+                        "url": "/ticket-monster/rest/shows",
+                        "params": {
+                            "_": "{{$timestamp}}",
+                            "event": "{{eventId}}"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$[*].id",
+                            "variable": "showId"
+                        }
+                    ]
                 }
             ]
         },
         {
             "stepName": "Get Show details",
-            "request": {
-                "method": "get",
-                "url": "/ticket-monster/rest/shows/{{showId}}",
-                "params": {
-                    "_": "{{$timestamp}}"
-                }
-            },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "jsonpath",
-                    "expression": "$[*].id",
-                    "variable": "showId"
-                },
-                {
-                    "type": "jsonpath",
-                    "expression": "$.performances[0].id",
-                    "variable": "performanceId"
-                },
-                {
-                    "type": "jsonpath",
-                    "expression": "$.ticketPrices[0].id",
-                    "variable": "ticketPriceId"
+                    "config": {
+                        "method": "get",
+                        "url": "/ticket-monster/rest/shows/{{showId}}",
+                        "params": {
+                            "_": "{{$timestamp}}"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$[*].id",
+                            "variable": "showId"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.performances[0].id",
+                            "variable": "performanceId"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.ticketPrices[0].id",
+                            "variable": "ticketPriceId"
+                        }
+                    ]
                 }
             ]
         },
         {
             "stepName": "Post Booking",
-            "request": {
-                "method": "post",
-                "url": "/ticket-monster/rest/bookings",
-                "data": {
-                    "ticketRequests": [
-                        {
-                            "ticketPrice": "{{ticketPriceId}}",
-                            "quantity": 1
-                        }
-                    ],
-                    "email": "{{email}}",
-                    "performance": "{{performanceId}}"
-                }
-            },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "jsonpath",
-                    "expression": "$.id",
-                    "variable": "bookingId"
+                    "config": {
+                        "method": "post",
+                        "url": "/ticket-monster/rest/bookings",
+                        "data": {
+                            "ticketRequests": [
+                                {
+                                    "ticketPrice": "{{ticketPriceId}}",
+                                    "quantity": 1
+                                }
+                            ],
+                            "email": "{{email}}",
+                            "performance": "{{performanceId}}"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.id",
+                            "variable": "bookingId"
+                        }
+                    ]
                 }
             ]
         },
         {
             "stepName": "Delete Booking",
-            "request": {
-                "method": "delete",
-                "url": "/ticket-monster/rest/bookings/{{bookingId}}"
-            }
+            "requests": [
+                {
+                    "config": {
+                        "method": "delete",
+                        "url": "/ticket-monster/rest/bookings/{{bookingId}}"
+                    }
+                }
+            ]
         }
     ]
 }

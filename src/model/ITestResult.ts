@@ -1,5 +1,5 @@
-import {AxiosError,AxiosRequestConfig,AxiosResponse} from 'axios'
-import {IAssertionResult,ITestStep,IVariable} from './ITestConfig'
+import {AxiosError,AxiosRequestConfig} from 'axios'
+import {IVariable} from './ITestConfig'
 
 export interface IRequestResult {
     config?: AxiosRequestConfig
@@ -10,6 +10,14 @@ export interface IRequestResult {
     statusText?: string
     duration: number
     success:boolean
+}
+
+export interface IAssertionResult {
+    description:string
+    success: boolean
+    failStep:boolean
+    value:any
+    expression:string
 }
 
 export interface IStepResult {

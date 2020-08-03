@@ -5,6 +5,7 @@ export interface IAssertion {
     description:string
     type:AssertionType
     expression:string
+    value?:any
     failStep?:boolean
 }
 
@@ -22,6 +23,7 @@ export interface IRequest {
     extractors?: IExtractor[]
     expectedStatus?:number
     assertions?:IAssertion[]
+    notSaveData?:boolean
 }
 
 export type ExtractorType = 'jsonpath' | 'xpath' | 'regexp'| 'header' | 'cookie'|'javaScript'
@@ -34,10 +36,15 @@ export interface IExtractor {
     array?:boolean
    
 }
+export interface IStepIterator {
+    varName:string
+    value:any 
+} 
 export interface ITestStep {
     stepName: string
     ignoreDuration?:boolean
     requests: IRequest[]
+    iterator?:IStepIterator
 }
 
 export type VariableType = 'string' | 'number' | 'array'
@@ -60,9 +67,3 @@ export interface ITestConfigData {
 }
 
 
-export interface IAssertionResult {
-    description:string
-    succcess: boolean
-    failStep:boolean
-    actualResult:string
-}

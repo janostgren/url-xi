@@ -1,6 +1,6 @@
 
 
-import { ITestConfigData, IVariable, IAssertionResult } from '../model/ITestConfig'
+import { IVariable } from '../model/ITestConfig'
 import { ITestResults, IStepResult } from '../model/ITestResult'
 
 import { AxiosResponse, AxiosRequestConfig, AxiosError } from 'axios'
@@ -12,7 +12,6 @@ import path from 'path'
 import util from 'util';
 
 export class TestResultProcessor extends TestBase {
-
     private _results: ITestResults
     constructor(results: ITestResults, debug: boolean = false) {
         super(debug, "TestResultProcessor")
@@ -28,7 +27,6 @@ export class TestResultProcessor extends TestBase {
     }
 
     public viewResults() {
-
         console.log("\n----- Process results [%s] -----\n", this._results.testName)
         if (this._results.variables) {
             console.log("----- Variables values -----")
@@ -41,19 +39,13 @@ export class TestResultProcessor extends TestBase {
         console.log("----- Steps result -----")
         for (let idx: number = 0; idx < this._results.stepResults.length; idx++) {
             let stepResult: IStepResult = this._results.stepResults[idx]
-            console.log("\tStep Name [%s] : success=%s, duration=%d, ignore duration=%s", stepResult.stepName, stepResult.success,stepResult.duration,stepResult.ignoreDuration)
-
-            //console.log("\t\tstatus=%d %s", stepResult.status, stepResult.statusText)
-           
+            console.log("\tStep Name [%s] : success=%s, duration=%d, ignore duration=%s", stepResult.stepName, stepResult.success, stepResult.duration, stepResult.ignoreDuration)
             stepResult.requestResults.forEach(requestResult => {
-                console.log("\t\t %s [%s] : success=%s, duration%d, status=(%d : %s)",
-                requestResult.config?.url,requestResult.config?.method?.toLocaleUpperCase(), requestResult.success,requestResult.duration,
-                requestResult.status,requestResult.statusText)
-
+                console.log("\t\t %s [%s] : success=%s, duration=%d, status=(%d : %s)",
+                    requestResult.config?.url, requestResult.config?.method?.toLocaleUpperCase(), requestResult.success, requestResult.duration,
+                    requestResult.status, requestResult.statusText)
             }
-
             )
-
         }
         console.log("-----[Test Summary] -----")
         console.log("Total Response Time: %d", this._results.totalDuration)

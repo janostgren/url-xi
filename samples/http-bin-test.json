@@ -18,85 +18,281 @@
             "type": "string",
             "usage": "info",
             "value": ""
+        },
+        {
+            "key": "randomScript",
+            "type": "string",
+            "usage": "info",
+            "value": ""
+        },
+        {
+            "key": "slideTitles",
+            "type": "array",
+            "usage": "",
+            "value": ""
         }
+
     ],
     "baseURL": "https://httpbin.org",
     "config": {},
     "steps": [
         {
             "stepName": "Home page",
-            "request": {
-                "method": "get",
-                "url": "/"
-            },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "header",
-                    "expression": "content-type",
-                    "variable": "homePageContent"
+                    "config": {
+                        "method": "get",
+                        "url": "/"
+                    },
+                    "notSaveData":true,
+                    "extractors": [
+                        {
+                            "type": "header",
+                            "expression": "content-type",
+                            "variable": "homePageContent"
+                        },
+                        {
+                            "type": "regexp",
+                            "expression": "<script\\s+src=\"(.+)\">\\s+<\/script>",
+                            "variable": "javaScripts",
+                            "array": true
+                        },
+                        {
+                            "type": "regexp",
+                            "expression": "<script\\s+src=\"(.+)\">\\s+<\/script>",
+                            "variable": "randomScript"
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value":"{{randomScript}}",
+                            "description": "JavaScript: JavaScript reference should have suffix .js",
+                            "expression":"value.endsWith('.js')",
+                            "failStep":true
+                        },
+                        {
+                            "type": "regexp",
+                            "description": "Regexp: JavaScript reference should have suffix .js",
+                            "expression":"\\.js$",
+                            "value":"{{randomScript}}",
+                            "failStep":true
+                        }
+                    ]
                 }
             ]
         },
         {
-            "stepName": "Get Method",
-            "request": {
-                "method": "get",
-                "url": "/get"
+            "stepName": "Get JavaScripts",
+            "iterator": {
+                "varName": "javaScript",
+                "value": "{{javaScripts}}"
             },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "header",
-                    "expression": "server",
-                    "variable": "server"
+                    "config": {
+                        "method": "get",
+                        "url": "{{javaScript}}"
+                    },
+                    "extractors": [],
+                    "notSaveData":true
                 }
             ]
         },
         {
-            "stepName": "Basic Auth Failed",
-            "expectedStatus": 401,
-            "request": {
-                "method": "get",
-                "url": "/basic-auth/foo/error",
-                "auth": {
-                    "username": "foo",
-                    "password": "bar"
-                }
-            },
-            "extractors": []
-        },
-        {
-            "stepName": "Basic Auth",
-            "request": {
-                "method": "get",
-                "url": "/basic-auth/foo/bar",
-                "auth": {
-                    "username": "foo",
-                    "password": "bar"
-                }
-            },
-            "extractors": [
+            "stepName": "Image JPeg",
+          
+            "requests": [
                 {
-                    "type": "jsonpath",
-                    "expression": "$.authenticated",
-                    "variable": "authenticated"
+                    "config": {
+                        "method": "get",
+                        "url": "/image/jpeg",
+                        "headers": {"Accept": "text/html"}
+
+                    },
+                    "extractors": [
+                        
+                            {
+                                "type": "header",
+                                "expression": "content-type",
+                                "variable": "imageType"
+                            },
+                            {
+                                "type": "header",
+                                "expression": "content-length",
+                                "variable": "imageLength"
+                            }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "value",
+                            "value":"{{imageType}}",
+                            "description": "Image content type should be jpeg",
+                            "expression":"image/jpeg",
+                            "failStep":true
+                        },
+                        {
+                            "type": "javaScript",
+                            "value":"{{imageLength}}",
+                            "description": "Image length at least 32k",
+                            "expression":"value >== 35588",
+                            "failStep":true
+                        }
+
+                    ],
+                    "notSaveData":true
                 }
             ]
         },
-       
         {
-            "stepName": "Bearer Auth",
-            "request": {
-                "method": "get",
-                "url": "/bearer",
-                "headers": {
-                    "Authorization": "Bearer abcd1234"
-                }
+            "stepName": "HTTP Methods",
+            "iterator": {
+                "varName": "method",
+                "value": [
+                    "get",
+                    "post",
+                    "patch",
+                    "put",
+                    "delete"
+                ]
             },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "jsonpath",
-                    "expression": "$.authenticated",
-                    "variable": "authenticated"
+                    "config": {
+                        "method": "{{method}}",
+                        "url": "/{{method}}",
+                        "data":{"testdata":true,"timestamp":"{{$timestamp}}"}
+                    },
+                    "extractors": [
+                        {
+                            "type": "header",
+                            "expression": "server",
+                            "variable": "server"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.origin",
+                            "variable": "origin"
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value":"{{origin}}",
+                            "description": "Return origin should contain an IP address",
+                            "expression":"/^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$/.test(value)",
+                            "failStep":true
+                        }
+
+                    ]
+                }
+            ]
+        },
+        {
+            "stepName": "Auth tests",
+            "ignoreDuration": true,
+            "requests": [
+                {
+                    "expectedStatus": 401,
+                    "config": {
+                        "method": "get",
+                        "url": "/basic-auth/foo/error",
+                        "auth": {
+                            "username": "foo",
+                            "password": "bar"
+                        }
+                    },
+                    "extractors": []
+                },
+                {
+                    "config": {
+                        "method": "get",
+                        "url": "/basic-auth/foo/bar",
+                        "auth": {
+                            "username": "foo",
+                            "password": "bar"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.authenticated",
+                            "variable": "authenticated"
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "value",
+                            "value":"{{authenticated}}",
+                            "description": "Authenticated should be true",
+                            "expression":"true",
+                            "failStep":true
+                        }                   
+                    ]
+                },
+                {
+                    "config": {
+                        "method": "get",
+                        "url": "/bearer",
+                        "headers": {
+                            "Authorization": "Bearer abcd1234"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.authenticated",
+                            "variable": "authenticated"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stepName": "Get XML",
+            "requests": [
+                {
+                    "config": {
+                        "method": "get",
+                        "url": "/xml",
+                        "headers": {
+                            "Accept": "application/xml"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "xpath",
+                            "expression": "/slideshow/slide[1]/title/text()",
+                            "variable": "slideTitle"
+                        },
+                        {
+                            "type": "xpath",
+                            "expression": "string(/slideshow/@title)",
+                            "variable": "slideShowTitle"
+                        },
+                        {
+                            "type": "xpath",
+                            "expression": "/slideshow/slide[*]/title/text()",
+                            "variable": "slideTitles",
+                            "array": true
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value":"{{slideTitles}}",
+                            "description": "Slide titles should contain an array with more than 1 elements",
+                            "expression":"Array.isArray(value) && value.length > 1",
+                            "failStep":true
+                        }  ,
+                        {
+                            "type": "value",
+                            "value":"{{slideShowTitle}}",
+                            "description": "Check the slide show title",
+                            "expression":"Sample Slide Show",
+                            "failStep":true
+                        }                     
+                    ]
                 }
             ]
         }

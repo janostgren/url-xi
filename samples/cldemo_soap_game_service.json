@@ -36,67 +36,75 @@
     "steps": [
         {
             "stepName": "Get All Games",
-            "request": {
-                "method": "post",
-                "url": "/CheckGamesService.svc",
-                "data": [
-                    "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:tem=\"http://tempuri.org/\">",
-                    "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">",
-                    "<wsa:To>http://cldemo.apicasystem.com:8001/CheckGamesService.svc</wsa:To>",
-                    "<wsa:Action>http://tempuri.org/ICheckGamesService/GetAllGamesByTeamId</wsa:Action></soap:Header>",
-                    "<soap:Body>",
-                    "<tem:GetAllGamesByTeamId>",
-                    "<tem:teamID>{{randomTeamId}}</tem:teamID> ",
-                    "<tem:isCachingOff>false</tem:isCachingOff>",
-                    "</tem:GetAllGamesByTeamId>",
-                    "</soap:Body>",
-                    "</soap:Envelope>"
-                ],
-                "headers": {
-                    "SOAPAction": "http://tempuri.org/ICheckGamesService/GetAllGamesByTeamId"
-                }  
-            },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "xpath",
-                    "expression": "//*[local-name() = 'GameId']/text()",
-                    "variable": "gameId"
-                },
-                {
-                    "type": "regexp",
-                    "expression": "b:GameId>(\\d+)<",
-                    "variable": "gameId2"
+                    "config": {
+                        "method": "post",
+                        "url": "/CheckGamesService.svc",
+                        "data": [
+                            "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:tem=\"http://tempuri.org/\">",
+                            "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">",
+                            "<wsa:To>http://cldemo.apicasystem.com:8001/CheckGamesService.svc</wsa:To>",
+                            "<wsa:Action>http://tempuri.org/ICheckGamesService/GetAllGamesByTeamId</wsa:Action></soap:Header>",
+                            "<soap:Body>",
+                            "<tem:GetAllGamesByTeamId>",
+                            "<tem:teamID>{{randomTeamId}}</tem:teamID> ",
+                            "<tem:isCachingOff>false</tem:isCachingOff>",
+                            "</tem:GetAllGamesByTeamId>",
+                            "</soap:Body>",
+                            "</soap:Envelope>"
+                        ],
+                        "headers": {
+                            "SOAPAction": "http://tempuri.org/ICheckGamesService/GetAllGamesByTeamId"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "xpath",
+                            "expression": "//*[local-name() = 'GameId']/text()",
+                            "variable": "gameId"
+                        },
+                        {
+                            "type": "regexp",
+                            "expression": "b:GameId>(\\d+)<",
+                            "variable": "gameId2"
+                        }
+                    ]
                 }
             ]
         },
         {
             "stepName": "Get Remaing Tickets for Game",
-            "request": {
-                "method": "post",
-                "url": "/CheckGamesService.svc",
-                "data": [
-                    "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:tem=\"http://tempuri.org/\">",
-                    "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">",
-                    "<wsa:To>http://sesthbwb09p.apica.local:8001/CheckGamesService.svc</wsa:To>", 
-                    "<wsa:Action>http://tempuri.org/ICheckGamesService/RemainingTicketsPerGameId</wsa:Action></soap:Header>",
-                    "<soap:Body>",
-                      "<tem:RemainingTicketsPerGameId>", 
-                        "<tem:gameID>{{gameId}}</tem:gameID>",
-                        "<tem:isCachingOff>true</tem:isCachingOff>",
-                     "</tem:RemainingTicketsPerGameId>",
-                    "</soap:Body>",
-                  "</soap:Envelope>"
-                ],
-                "headers": {
-                    "SOAPAction": "http://tempuri.org/ICheckGamesService/RemainingTicketsPerGameId"
-                }
-            },
-            "extractors": [
+            "requests": [
                 {
-                    "type": "xpath",
-                    "expression": "//*[local-name() = 'RemainingTicketsPerGameIdResult']/text()",
-                    "variable": "remainingTickets"
-                }  
+                    "config": {
+                        "method": "post",
+                        "url": "/CheckGamesService.svc",
+                        "data": [
+                            "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:tem=\"http://tempuri.org/\">",
+                            "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">",
+                            "<wsa:To>http://sesthbwb09p.apica.local:8001/CheckGamesService.svc</wsa:To>",
+                            "<wsa:Action>http://tempuri.org/ICheckGamesService/RemainingTicketsPerGameId</wsa:Action></soap:Header>",
+                            "<soap:Body>",
+                            "<tem:RemainingTicketsPerGameId>",
+                            "<tem:gameID>{{gameId}}</tem:gameID>",
+                            "<tem:isCachingOff>true</tem:isCachingOff>",
+                            "</tem:RemainingTicketsPerGameId>",
+                            "</soap:Body>",
+                            "</soap:Envelope>"
+                        ],
+                        "headers": {
+                            "SOAPAction": "http://tempuri.org/ICheckGamesService/RemainingTicketsPerGameId"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "xpath",
+                            "expression": "//*[local-name() = 'RemainingTicketsPerGameIdResult']/text()",
+                            "variable": "remainingTickets"
+                        }
+                    ]
+                }
             ]
         }
     ]
