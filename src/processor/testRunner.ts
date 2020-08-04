@@ -5,7 +5,8 @@ import Axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { TestBase } from '../lib/testbase'
 
 import * as helper from '../lib/helpers'
-import jsonPath from 'jsonpath';
+//import jsonPath from 'jsonpath';
+import { JSONPath } from 'jsonpath-plus';
 import xpath from 'xpath';
 import xmldom from 'xmldom'
 
@@ -28,15 +29,22 @@ class TestRunner extends TestBase {
         return ret
     }
 
+    public replaceFromJSON(json: any) {
+        let jsonStr: string = JSON.stringify(json)
+        let s: string = this._testConfig.replaceWithVarVaule(jsonStr)
+        let ret: any = JSON.parse(s)
+        return ret
+    }
+
     private validate(assertions: IAssertion[]) {
         let results: IAssertionResult[] = []
         assertions.forEach(assertion => {
             let ok: boolean = false
-
+            let description=this._testConfig.replaceWithVarVaule(assertion.description)
             let value: any = ""
             if (assertion.value)
                 value = this._testConfig.replaceWithVarVaule(assertion.value)
-            let result: IAssertionResult = { "description": assertion.description, "success": false, "value": value, "expression": "", "failStep": assertion?.failStep || false }
+            let result: IAssertionResult = { "description": description, "success": false, "value": value, "expression": "", "failStep": assertion?.failStep || false }
             switch (assertion.type) {
                 case 'javaScript':
                     try {
@@ -79,13 +87,19 @@ class TestRunner extends TestBase {
             try {
                 let extractor: IExtractor = elem
 
+                let expression: string = this._testConfig.replaceWithVarVaule(extractor.expression)
+              
+
                 switch (extractor.type) {
                     case "jsonpath":
                         if (response.data) {
-                            let jp = jsonPath.query(response.data, extractor.expression)
+                            //let jp = jsonPath.query(response.data, extractor.expression)
+                            let jp = JSONPath({ path: expression, json: response.data })
                             if (jp) {
                                 if (extractor.counter)
                                     value = jp.length
+                                else if (extractor.index)
+                                    value = Math.floor(Math.random() * jp.length)
                                 else if (extractor.array)
                                     value = jp
                                 else
@@ -97,10 +111,12 @@ class TestRunner extends TestBase {
                         if (response.data) {
                             let p = new xmldom.DOMParser()
                             let xml = p.parseFromString(response.data)
-                            let nodes = xpath.select(extractor.expression, xml)
+                            let nodes = xpath.select(expression, xml)
                             if (nodes) {
                                 if (extractor.counter)
                                     value = nodes.length
+                                else if (extractor.index)
+                                    value = Math.floor(Math.random() * nodes.length)
                                 else if (nodes.length) {
                                     if (Array.isArray(nodes)) {
                                         if (extractor.array) {
@@ -127,11 +143,13 @@ class TestRunner extends TestBase {
                         break
                     case "regexp":
                         if (response.data) {
-                            let regexp: RegExp = new RegExp(extractor.expression, "gm");
+                            let regexp: RegExp = new RegExp(expression, "gm");
                             let arr = [...response.data.matchAll(regexp)];
                             if (arr) {
                                 if (extractor.counter)
                                     value = arr.length
+                                else if (extractor.index)
+                                    value = Math.floor(Math.random() * arr.length)
                                 else if (arr.length > 0) {
                                     if (extractor.array) {
                                         let a: string[] = []
@@ -155,7 +173,8 @@ class TestRunner extends TestBase {
                     case "header":
                         let headers = response?.headers
                         if (headers)
-                            value = headers[extractor.expression]
+                            value = headers[
+                                expression]
                         break
                     case "cookie":
                         break
@@ -206,8 +225,8 @@ class TestRunner extends TestBase {
                     requestResult.success = true
                     if (request.assertions && !stepResult.assertions)
                         stepResult.assertions = []
-                    if (config.data ) {
-                        if (Array.isArray(config.data) && typeof config?.data[0] === 'string' )
+                    if (config.data) {
+                        if (Array.isArray(config.data) && typeof config?.data[0] === 'string')
                             config.data = config.data.join("")
                         if (typeof config.data === 'string') {
                             let strdata = this._testConfig.replaceWithVarVaule(config.data)
@@ -246,12 +265,15 @@ class TestRunner extends TestBase {
                             this.extractValues(request.extractors, response)
                         }
                         if (!foundError && request.assertions) {
-                            let ar: IAssertionResult[] = this.validate(request.assertions)
-                            if (ar.length) {
+                            let assres: IAssertionResult[] = this.validate(request.assertions)
+                            if (assres.length) {
                                 if (!stepResult.assertions)
                                     stepResult.assertions = []
-                                stepResult.assertions = stepResult.assertions?.concat(stepResult.assertions, ar)
-                                let failStep = ar.find(res => {
+                                //stepResult.assertions = stepResult.assertions?.concat(stepResult.assertions, assres)
+                                assres.forEach( assertion =>  {
+                                    stepResult.assertions?.push(assertion)
+                                })
+                                let failStep = assres.find(res => {
                                     return (res.failStep && !res.success)
                                 }
                                 )
@@ -286,7 +308,7 @@ class TestRunner extends TestBase {
     public async run() {
         let results: ITestResults = JSON.parse("{}")
         results.testName = this._testConfig.configData.testName
-        this._testConfig.setVariableValue("$testName",results.testName)
+        this._testConfig.setVariableValue("$testName", results.testName)
         results.baseURL = this._testConfig.configData.baseURL
         results.success = true
         results.returnValue = 0

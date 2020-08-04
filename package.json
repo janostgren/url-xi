@@ -5,7 +5,7 @@
   "main": "dist/cli/index.js",
   "scripts": {
     "test": "node ./dist/cli/index.js --debug -f samples/default_test.json -r ./results",
-    "clear":"rm ./log/*;rm ./results/*"
+    "clear": "rm ./log/*;rm ./results/*"
   },
   "bin": {
     "url-xi": "./dist/cli/index.js"
@@ -19,7 +19,7 @@
     "@types/xmldom": "^0.1.30",
     "axios": "^0.19.2",
     "commander": "^5.1.0",
-    "jsonpath": "^1.0.2",
+    "jsonpath-plus": "^4.0.0",
     "log4js": "^6.3.0",
     "uuid": "^8.2.0",
     "xmldom": "^0.3.0",

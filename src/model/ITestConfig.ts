@@ -34,6 +34,7 @@ export interface IExtractor {
     variable: string
     counter?: boolean
     array?:boolean
+    index?:boolean
    
 }
 export interface IStepIterator {

@@ -15,9 +15,27 @@
             "value": "'DEMO_APP'"
         },
         {
+            "key": "aggregation",
+            "type": "string",
+            "usage": "",
+            "value": "let arr=['max','min','avg'];arr[Math.floor(Math.random() * arr.length)]"
+        },
+        {
             "key": "pageViewName",
             "type": "string",
-            "usage": ""
+            "usage": "inResponse"
+        },
+        {
+            "key": "pageViewIndex",
+            "type": "number",
+            "usage": "",
+            "value":0
+        },
+        {
+            "key": "pageViewDuration",
+            "type": "number",
+            "usage": "returnValue",
+            "value":0
         }
     ],
     "baseURL": "https://api.applicationinsights.io",
@@ -39,7 +57,7 @@
                                 "id": "Page Views duration per path for Edge",
                                 "parameters": {
                                     "metricId": "pageViews/duration",
-                                    "aggregation": "max",
+                                    "aggregation": "{{aggregation}}",
                                     "timespan": "PT240H",
                                     "segment": "pageView/name,pageView/urlPath",
                                     "filter": "startswith(client/browser,'Edg')"
@@ -50,22 +68,45 @@
                     "extractors": [
                         {
                             "type": "jsonpath",
-                            "expression": "$[0].body.value.segments[0].segments[0]",
+                            "expression": "$[0].body.value.segments[*].pageView/name",
+                            "variable": "pageViewIndex",
+                            "index":true
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$[0].body.value.segments[{{pageViewIndex}}].pageView/name",
                             "variable": "pageViewName"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$[0].body.value.segments[{{pageViewIndex}}].segments[0].pageViews/duration.{{aggregation}}",
+                            "variable": "pageViewDuration"
                         },
                         {
                             "type": "jsonpath",
                             "expression": "$[0].id",
                             "variable": "id"
+                        }
+                       
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value": "{{pageViewDuration}}",
+                            "description": "Duration should be greather than 1 ms",
+                            "expression": "value > 1",
+                            "failStep": true
                         },
                         {
-                            "type": "header",
-                            "expression": "strict-transport-security",
-                            "variable": "x"
+                            "type": "regexp",
+                            "value": "{{aggregation}}",
+                            "description": "Aggregation must be max,min or avg",
+                            "expression": "(max|min|avg)",
+                            "failStep": true
                         }
+                       
                     ]
-                }
-                
+                }     
             ]
         }
     ]

@@ -1,13 +1,10 @@
-console.info(__filename)
-let m=1
-let str="kalle ?/={{_xxx}} {{$timestamp}}"
-let val = str.replace(/{{(\$?[A-Za-z_]\w+)}}/gm, function (x, y) {
-           
-    console.log(x,y)
-    if(y === "$timestamp")
-        y=Date.now().toString()
+console.info("Testing")
+let e = "let arr=['max','min','avg'];arr[Math.floor(Math.random() * arr.length)]"
+try {
+    var v = eval(e)
 
-   
-    return y
-})
-console.log(val)
+    console.info("eval=", v)
+}
+catch (error) {
+
+}

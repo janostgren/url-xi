@@ -18,33 +18,48 @@ export class TestConfig extends TestBase {
         this._base_url = base_url
     }
 
-    public async createFromFile(pathName: string) {
-        let readFile = util.promisify(fs.readFile);
-        let content = await (await readFile(pathName)).toString();
-        this.create(content)
+    public async readFile(pathName: string) {
+        try {
+            let readFile = util.promisify(fs.readFile);
+            let content = await (await readFile(pathName)).toString();
+            return content
+        }
+        catch(error) {
+            this._logger.error(error)
+            return undefined
+
+        }
     }
 
-    public async create(content: string) {
-        this.configData = JSON.parse(content)
-        if (!this.configData?.config)
-            this.configData.config = JSON.parse("{}")
-        if (this._base_url)
-            this.configData.baseURL = this._base_url
-        if (this.configData.config?.headers)
-            this.configData.config.headers = Object.assign(this.configData.config.headers, this._headers)
-        else if (this.configData.config)
-            this.configData.config.headers = this._headers
+    public create(content: string) {
+        try {
+            this.configData = JSON.parse(content)
+            if (!this.configData?.config)
+                this.configData.config = JSON.parse("{}")
+            if (this._base_url)
+                this.configData.baseURL = this._base_url
+            if (this.configData.config?.headers)
+                this.configData.config.headers = Object.assign(this.configData.config.headers, this._headers)
+            else if (this.configData.config)
+                this.configData.config.headers = this._headers
 
-        this._logger.trace("config:", this.configData.config)
+            this._logger.trace("config:", this.configData.config)
 
-        if (this.configData.variables) {
-            for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
-                let v: IVariable = this.configData.variables[idx]
-                if (v.value)
-                    v.value = eval(v.value)
-                this._varMap.set(v.key, v)
+            if (this.configData.variables) {
+                for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
+                    let v: IVariable = this.configData.variables[idx]
+                    if (v.value)
+                        v.value = eval(v.value)
+                    this._varMap.set(v.key, v)
+                }
             }
         }
+        catch (error) {
+            this._logger.error(error)
+            return false
+
+        }
+        return true
     }
 
     public setVariableValue(key: string, value: any) {
@@ -61,7 +76,7 @@ export class TestConfig extends TestBase {
     public replaceWithVarVaule(str: string) {
         let vars: Map<string, IVariable> = this._varMap
         let ret: any = ""
-        let val:any = str.replace(/{{(\$?[A-Za-z_]\w+)}}/gm, function (x: string, y: string) {  
+        let val: any = str.replace(/{{(\$?[A-Za-z_]\w+)}}/gm, function (x: string, y: string) {
             switch (y) {
                 case "$timestamp":
                     ret = Date.now()
@@ -74,7 +89,7 @@ export class TestConfig extends TestBase {
             }
             return ret
         })
-        if(ret && Array.isArray(ret))
+        if (ret && Array.isArray(ret))
             return ret;
         return val ? val : str
     }

@@ -41,7 +41,7 @@ const cliLogConfig =
 }
 
 
-var test_config: string, result_dir: string, headers: any, debug: boolean
+var test_file: string, result_dir: string, headers: any, debug: boolean
 var parse_only: boolean, resultName: string
 var base_url:string
 var server: string, port: number
@@ -68,7 +68,7 @@ program.parse(process.argv);
 
 
 
-test_config = program.file;
+test_file = program.file;
 result_dir = program.results;
 headers = JSON.parse(program.xheaders)
 base_url=program.url
@@ -80,13 +80,13 @@ port = program.port
 
 if (!server) {
 
-    if (!test_config || !test_config.endsWith('.json')) {
+    if (!test_file || !test_file.endsWith('.json')) {
         console.error("-f is mandatory and must end with .json")
         process.exit(2)
     }
-    testfile_path = path.parse(test_config)
+    testfile_path = path.parse(test_file)
     if (!testfile_path) {
-        console.error("The specified test file %s is not valid", test_config)
+        console.error("The specified test file %s is not valid", test_file)
         process.exit(2)
     }
     if (result_dir && !fs.lstatSync(result_dir).isDirectory()) {
@@ -127,9 +127,12 @@ run_cli()
 
 async function run_cli() {
     try {
+        let ok:boolean = false
         let testConfig: TestConfig = new TestConfig(headers, base_url,debug);
-        await testConfig.createFromFile(test_config);
-        if (!parse_only) {
+        let content:any=await testConfig.readFile(test_file);
+        if(content) 
+            ok=testConfig.create(content)
+        if (ok && !parse_only) {
            
             let testRunner: TestRunner = new TestRunner(testConfig, debug);
             let results:ITestResults=await testRunner.run();
