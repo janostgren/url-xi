@@ -42,6 +42,7 @@ export interface IStepIterator {
 } 
 export interface ITestStep {
     stepName: string
+    description?:string
     ignoreDuration?:boolean
     requests: IRequest[]
     iterator?:IStepIterator
@@ -59,9 +60,10 @@ export interface IVariable {
 }
 
 export interface ITestConfigData {
-    testName: string,
-    variables?: IVariable[],
-    baseURL: string,
+    testName: string
+    description?:string
+    variables?: IVariable[]
+    baseURL: string
     config?: IRequestConfig
     steps: ITestStep[]
 }

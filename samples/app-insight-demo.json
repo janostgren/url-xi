@@ -1,0 +1,72 @@
+{
+    "testName": "Application Insight Demo",
+    "description": "Get metrics from Microsoft Application insight",
+    "variables": [
+        {
+            "key": "api_key",
+            "type": "string",
+            "usage": "",
+            "value": "'DEMO_KEY'"
+        },
+        {
+            "key": "application",
+            "type": "string",
+            "usage": "",
+            "value": "'DEMO_APP'"
+        },
+        {
+            "key": "pageViewName",
+            "type": "string",
+            "usage": ""
+        }
+    ],
+    "baseURL": "https://api.applicationinsights.io",
+    "config": {
+        "headers": {
+            "x-api-key": "{{api_key}}"
+        }
+    },
+    "steps": [
+        {
+            "stepName": "Get Page views",
+            "requests": [
+                {
+                    "config": {
+                        "method": "post",
+                        "url": "/v1/apps/{{application}}/metrics",
+                        "data": [
+                            {
+                                "id": "Page Views duration per path for Edge",
+                                "parameters": {
+                                    "metricId": "pageViews/duration",
+                                    "aggregation": "max",
+                                    "timespan": "PT240H",
+                                    "segment": "pageView/name,pageView/urlPath",
+                                    "filter": "startswith(client/browser,'Edg')"
+                                }
+                            }
+                        ]
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$[0].body.value.segments[0].segments[0]",
+                            "variable": "pageViewName"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$[0].id",
+                            "variable": "id"
+                        },
+                        {
+                            "type": "header",
+                            "expression": "strict-transport-security",
+                            "variable": "x"
+                        }
+                    ]
+                }
+                
+            ]
+        }
+    ]
+}

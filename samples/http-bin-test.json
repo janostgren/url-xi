@@ -31,7 +31,6 @@
             "usage": "",
             "value": ""
         }
-
     ],
     "baseURL": "https://httpbin.org",
     "config": {},
@@ -44,7 +43,7 @@
                         "method": "get",
                         "url": "/"
                     },
-                    "notSaveData":true,
+                    "notSaveData": true,
                     "extractors": [
                         {
                             "type": "header",
@@ -66,17 +65,17 @@
                     "assertions": [
                         {
                             "type": "javaScript",
-                            "value":"{{randomScript}}",
+                            "value": "{{randomScript}}",
                             "description": "JavaScript: JavaScript reference should have suffix .js",
-                            "expression":"value.endsWith('.js')",
-                            "failStep":true
+                            "expression": "value.endsWith('.js')",
+                            "failStep": true
                         },
                         {
                             "type": "regexp",
                             "description": "Regexp: JavaScript reference should have suffix .js",
-                            "expression":"\\.js$",
-                            "value":"{{randomScript}}",
-                            "failStep":true
+                            "expression": "\\.js$",
+                            "value": "{{randomScript}}",
+                            "failStep": true
                         }
                     ]
                 }
@@ -95,52 +94,50 @@
                         "url": "{{javaScript}}"
                     },
                     "extractors": [],
-                    "notSaveData":true
+                    "notSaveData": true
                 }
             ]
         },
         {
             "stepName": "Image JPeg",
-          
             "requests": [
                 {
                     "config": {
                         "method": "get",
                         "url": "/image/jpeg",
-                        "headers": {"Accept": "text/html"}
-
+                        "headers": {
+                            "Accept": "text/html"
+                        }
                     },
                     "extractors": [
-                        
-                            {
-                                "type": "header",
-                                "expression": "content-type",
-                                "variable": "imageType"
-                            },
-                            {
-                                "type": "header",
-                                "expression": "content-length",
-                                "variable": "imageLength"
-                            }
+                        {
+                            "type": "header",
+                            "expression": "content-type",
+                            "variable": "imageType"
+                        },
+                        {
+                            "type": "header",
+                            "expression": "content-length",
+                            "variable": "imageLength"
+                        }
                     ],
                     "assertions": [
                         {
                             "type": "value",
-                            "value":"{{imageType}}",
+                            "value": "{{imageType}}",
                             "description": "Image content type should be jpeg",
-                            "expression":"image/jpeg",
-                            "failStep":true
+                            "expression": "image/jpeg",
+                            "failStep": true
                         },
                         {
                             "type": "javaScript",
-                            "value":"{{imageLength}}",
+                            "value": "{{imageLength}}",
                             "description": "Image length at least 32k",
-                            "expression":"value >== 35588",
-                            "failStep":true
+                            "expression": "value >= 35588",
+                            "failStep": true
                         }
-
                     ],
-                    "notSaveData":true
+                    "notSaveData": true
                 }
             ]
         },
@@ -161,7 +158,8 @@
                     "config": {
                         "method": "{{method}}",
                         "url": "/{{method}}",
-                        "data":{"testdata":true,"timestamp":"{{$timestamp}}"}
+                        "data": "{\"testdata\":true,\"timestamp\":{{$timestamp}}}"
+                       
                     },
                     "extractors": [
                         {
@@ -178,12 +176,11 @@
                     "assertions": [
                         {
                             "type": "javaScript",
-                            "value":"{{origin}}",
+                            "value": "{{origin}}",
                             "description": "Return origin should contain an IP address",
-                            "expression":"/^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$/.test(value)",
-                            "failStep":true
+                            "expression": "/^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$/.test(value)",
+                            "failStep": true
                         }
-
                     ]
                 }
             ]
@@ -223,11 +220,11 @@
                     "assertions": [
                         {
                             "type": "value",
-                            "value":"{{authenticated}}",
+                            "value": "{{authenticated}}",
                             "description": "Authenticated should be true",
-                            "expression":"true",
-                            "failStep":true
-                        }                   
+                            "expression": "true",
+                            "failStep": true
+                        }
                     ]
                 },
                 {
@@ -280,18 +277,18 @@
                     "assertions": [
                         {
                             "type": "javaScript",
-                            "value":"{{slideTitles}}",
+                            "value": "{{slideTitles}}",
                             "description": "Slide titles should contain an array with more than 1 elements",
-                            "expression":"Array.isArray(value) && value.length > 1",
-                            "failStep":true
-                        }  ,
+                            "expression": "Array.isArray(value) && value.length > 1",
+                            "failStep": true
+                        },
                         {
                             "type": "value",
-                            "value":"{{slideShowTitle}}",
+                            "value": "{{slideShowTitle}}",
                             "description": "Check the slide show title",
-                            "expression":"Sample Slide Show",
-                            "failStep":true
-                        }                     
+                            "expression": "Sample Slide Show",
+                            "failStep": true
+                        }
                     ]
                 }
             ]

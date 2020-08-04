@@ -1,5 +1,6 @@
 {
     "testName": "Ticketmonster Order Tickets",
+    "description": "Order tickets in Ticketmonster. Setup AppDynamcics integration headers",
     "variables": [
         {
             "key": "email",
@@ -39,8 +40,29 @@
         }
     ],
     "baseURL": "http://ticketmonster.apicasystem.com",
-    "config": {},
+    "config": {
+        "headers": {
+            "ApicaScenario": "{{$testName}}",
+            "ApicaCheckId": "92e02d76-63cf-4a54-a4d6-29b9488fdc1a ",
+            "AppDynamicsSnapshotEnabled": "true"
+        }
+    },
     "steps": [
+        {
+            "stepName": "Home page",
+            "requests": [
+                {
+                    "config": {
+                        "method": "get",
+                        "url": "/ticket-monster",
+                        "headers": {
+                            "ApicaStep": "{{$stepName}}"
+                        }
+                    },
+                    "extractors": []
+                }
+            ]
+        },
         {
             "stepName": "Get Events",
             "requests": [
@@ -48,6 +70,9 @@
                     "config": {
                         "method": "get",
                         "url": "/ticket-monster/rest/events",
+                        "headers": {
+                            "ApicaStep": "{{$stepName}}"
+                        },
                         "params": {
                             "_": "{{$timestamp}}"
                         }
@@ -62,6 +87,7 @@
                 }
             ]
         },
+       
         {
             "stepName": "Get Shows",
             "requests": [
@@ -72,6 +98,9 @@
                         "params": {
                             "_": "{{$timestamp}}",
                             "event": "{{eventId}}"
+                        },
+                        "headers": {
+                            "ApicaStep": "{{$stepName}}"
                         }
                     },
                     "extractors": [
@@ -93,22 +122,21 @@
                         "url": "/ticket-monster/rest/shows/{{showId}}",
                         "params": {
                             "_": "{{$timestamp}}"
+                        },
+                        "headers": {
+                            "ApicaStep": "{{$stepName}}"
                         }
                     },
                     "extractors": [
+                       
                         {
                             "type": "jsonpath",
-                            "expression": "$[*].id",
-                            "variable": "showId"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$.performances[0].id",
+                            "expression": "$.performances[*].id",
                             "variable": "performanceId"
                         },
                         {
                             "type": "jsonpath",
-                            "expression": "$.ticketPrices[0].id",
+                            "expression": "$.ticketPrices[*].id",
                             "variable": "ticketPriceId"
                         }
                     ]
@@ -131,6 +159,9 @@
                             ],
                             "email": "{{email}}",
                             "performance": "{{performanceId}}"
+                        },
+                        "headers": {
+                            "ApicaStep": "{{$stepName}}"
                         }
                     },
                     "extractors": [
@@ -150,6 +181,9 @@
                     "config": {
                         "method": "delete",
                         "url": "/ticket-monster/rest/bookings/{{bookingId}}"
+                    },
+                    "headers": {
+                        "ApicaStep": "{{$stepName}}"
                     }
                 }
             ]

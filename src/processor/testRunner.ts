@@ -3,6 +3,8 @@ import { IRequestResult, IStepResult, ITestResults, IAssertionResult } from '../
 import { TestConfig } from '../config/testConfig'
 import Axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { TestBase } from '../lib/testbase'
+
+import * as helper from '../lib/helpers'
 import jsonPath from 'jsonpath';
 import xpath from 'xpath';
 import xmldom from 'xmldom'
@@ -176,7 +178,7 @@ class TestRunner extends TestBase {
         stepResult.duration = 0
         stepResult.ignoreDuration = step?.ignoreDuration || false
         stepResult.requestResults = []
-
+        this._testConfig.setVariableValue("$stepName", step.stepName)
         try {
             let foundError: boolean = false
             let iterator: IStepIterator = { "varName": "", "value": 1 }
@@ -204,9 +206,16 @@ class TestRunner extends TestBase {
                     requestResult.success = true
                     if (request.assertions && !stepResult.assertions)
                         stepResult.assertions = []
-                    if (config.data && Array.isArray(config.data)) {
-                        config.data = config.data.join("")
+                    if (config.data ) {
+                        if (Array.isArray(config.data) && typeof config?.data[0] === 'string' )
+                            config.data = config.data.join("")
+                        if (typeof config.data === 'string') {
+                            let strdata = this._testConfig.replaceWithVarVaule(config.data)
+                            let json = helper.toJson(strdata)
+                            config.data = json || strdata
+                        }
                     }
+
                     let response: AxiosResponse = JSON.parse("{}");
                     let stepConfig: AxiosRequestConfig = this.setConfigValues(config)
                     requestResult.config = stepConfig
@@ -277,6 +286,7 @@ class TestRunner extends TestBase {
     public async run() {
         let results: ITestResults = JSON.parse("{}")
         results.testName = this._testConfig.configData.testName
+        this._testConfig.setVariableValue("$testName",results.testName)
         results.baseURL = this._testConfig.configData.baseURL
         results.success = true
         results.returnValue = 0
