@@ -16,6 +16,21 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "URL-XI Server",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/dist/cli/index.js",
+            "args": [
+                "-s"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "URL xi default config",
             "skipFiles": [
                 "<node_internals>/**"

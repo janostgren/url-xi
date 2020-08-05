@@ -6,7 +6,7 @@ import { TestBase } from '../lib/testbase'
 import { IExtractor, IRequestConfig, ITestStep, ITestConfigData, IVariable } from '../model/ITestConfig'
 import * as schemaValidator from '../processor/schemaValidator'
 import * as helpers from '../lib/helpers'
-import { Logger } from 'log4js';
+
 
 export class TestConfig extends TestBase {
     private _varMap: Map<string, IVariable> = new Map<string, IVariable>();
@@ -15,10 +15,10 @@ export class TestConfig extends TestBase {
     private _errors:Array<object> 
     configData: ITestConfigData = {} as any;
 
-    constructor(headers: any, base_url: string = '', debug: boolean = false) {
+    constructor(headers?: any, base_url?:string, debug?:boolean) {
         super(debug, "TestConfig")
-        this._headers = headers
-        this._base_url = base_url
+        this._headers = headers 
+        this._base_url = base_url|| ''
         this._errors=[]
     }
 

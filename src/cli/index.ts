@@ -2,12 +2,13 @@
 import { Command } from 'commander';
 import { TestConfig } from '../config/testConfig'
 import { ITestResults } from '../model/ITestResult'
-import TestRunner from '../processor/testRunner'
+import {TestRunner} from '../processor/testRunner'
 import { TestResultProcessor } from '../processor/testResultProcessor';
 import * as log4js from "log4js";
 import path from 'path'
 import fs from 'fs'
 import express from 'express' 
+import * as apiRouter from '../server/router/apiRouter'
 import * as body_parser from 'body-parser' 
 
 
@@ -166,12 +167,16 @@ async function run_cli() {
 
 function run_server() {
     var app = express();
-    var router = express.Router();    
+    
 
     app.use(body_parser.urlencoded({ extended: true }));
     app.use(body_parser.json());
     app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
     app.use(express.static('public'));
+
+    var router = express.Router();  
+    router.use(apiRouter.router)
+    app.use('/api', router);
     
     app.listen(port, () =>
     logger.info("URL XI server (version %s) started on http port %d" ,version,port));
