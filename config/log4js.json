@@ -2,19 +2,19 @@
     "appenders": {
       "access": {
         "type": "dateFile",
-        "filename": "logs/url-xi-access.log",
+        "filename": "log/url-xi-access.log",
         "pattern": "-yyyy-MM-dd",
         "category": "http"
       },
       "app": {
         "type": "file",
-        "filename": "logs/url-xi-app.log",
+        "filename": "log/url-xi-app.log",
         "maxLogSize": 10485760,
         "numBackups": 3
       },
       "errorFile": {
         "type": "file",
-        "filename": "logs/url-xi-errors.log"
+        "filename": "log/url-xi-errors.log"
       },
       "errors": {
         "type": "logLevelFilter",

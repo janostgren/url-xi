@@ -1,2 +1,0 @@
-[2020-08-05T17:59:03.394] [ERROR] http - ::ffff:127.0.0.1 - - "GET / HTTP/1.1" 404 139 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0"
-[2020-08-05T17:59:14.190] [ERROR] http - ::ffff:127.0.0.1 - - "GET /public HTTP/1.1" 404 145 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0"
