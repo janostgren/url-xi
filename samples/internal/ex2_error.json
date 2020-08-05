@@ -1,0 +1,24 @@
+{
+    "testName": "Ticketmonster Home Page",
+    "description": "Simple Scenario for the TM home page",
+    "baseURL": "http://ticketmonster.apicasystem.com",
+    "variables": [
+       
+            {
+                "key": "server",
+                "type": "string",
+                "usage": "info",
+                "value": ""
+            }
+    ],
+    "steps": [
+        {
+            "stepName": "Home page",
+            "requests": [
+           
+            ]
+        }
+    ]
+}
+
+

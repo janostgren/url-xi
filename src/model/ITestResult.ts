@@ -1,15 +1,20 @@
 import {AxiosError,AxiosRequestConfig} from 'axios'
 import {IVariable} from './ITestConfig'
 
-export interface IRequestResult {
+interface IBaseResult {
+    startTime:number
+    duration:number
+    success:boolean
+} 
+
+export interface IRequestResult extends IBaseResult{
     config?: AxiosRequestConfig
     error?:AxiosError
     data?: any
     headers?: any
     status?: number
     statusText?: string
-    duration: number
-    success:boolean
+   
 }
 
 export interface IAssertionResult {
@@ -20,22 +25,20 @@ export interface IAssertionResult {
     expression:string
 }
 
-export interface IStepResult {
+export interface IStepResult extends IBaseResult{
     stepName:string
-    success:boolean
-    duration: number
     ignoreDuration:boolean
     requestResults:IRequestResult[]
     assertions?:IAssertionResult[]
 }
 
 
-export interface ITestResults {
+export interface ITestResults extends IBaseResult {
     testName: string,
     baseURL: string,
-    totalDuration: number
+   // totalDuration: number
     returnValue: number
-    success:boolean
+   
     variables?: IVariable[],
     stepResults: IStepResult[]
 }

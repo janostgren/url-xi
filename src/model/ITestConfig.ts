@@ -1,12 +1,15 @@
 import { Method} from 'axios'
 
 export type AssertionType = 'regexp' | 'javaScript' | 'value'
+
+
 export interface IAssertion {
     description:string
     type:AssertionType
     expression:string
     value?:any
     failStep?:boolean
+    reportFailOnly?:boolean
 }
 
 export interface IRequestConfig {

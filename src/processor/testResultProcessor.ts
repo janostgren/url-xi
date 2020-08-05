@@ -23,7 +23,9 @@ export class TestResultProcessor extends TestBase {
             resultName = "res_" + uuidv4()
         let resultFile = path.resolve(result_dir, resultName + ".json")
         let writeFile = util.promisify(fs.writeFile);
-        await writeFile(resultFile, JSON.stringify(this._results))
+        let res:string= JSON.stringify(this._results)
+        await writeFile(resultFile, res)
+        return res
     }
 
     public viewResults() {
@@ -48,7 +50,7 @@ export class TestResultProcessor extends TestBase {
             )
         }
         console.log("-----[Test Summary] -----")
-        console.log("Total Response Time: %d", this._results.totalDuration)
+        console.log("Total Response Time: %d", this._results.duration)
         console.log("Number of steps: %d", this._results?.stepResults?.length || 0)
         console.log("Return value: %d", this._results.returnValue)
         console.log("Result success: %s", this._results.success)

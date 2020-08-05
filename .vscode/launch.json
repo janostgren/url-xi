@@ -24,7 +24,9 @@
             "args": [
                 "-f",
                 "samples/default_test.json",
-                "--debug"
+                "--debug",
+                "-r",
+                "./results"
             ],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"

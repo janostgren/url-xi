@@ -4,21 +4,25 @@ import util from 'util';
 import { AxiosResponse, Method } from 'axios'
 import { TestBase } from '../lib/testbase'
 import { IExtractor, IRequestConfig, ITestStep, ITestConfigData, IVariable } from '../model/ITestConfig'
-
+import * as schemaValidator from '../processor/schemaValidator'
+import { Logger } from 'log4js';
 
 export class TestConfig extends TestBase {
     private _varMap: Map<string, IVariable> = new Map<string, IVariable>();
     private _headers: any
     private _base_url: string
+    private _errors:Array<any> 
     configData: ITestConfigData = {} as any;
 
     constructor(headers: any, base_url: string = '', debug: boolean = false) {
         super(debug, "TestConfig")
         this._headers = headers
         this._base_url = base_url
+        this._errors=[]
     }
 
     public async readFile(pathName: string) {
+        this._errors=[]
         try {
             let readFile = util.promisify(fs.readFile);
             let content = await (await readFile(pathName)).toString();
@@ -26,14 +30,22 @@ export class TestConfig extends TestBase {
         }
         catch(error) {
             this._logger.error(error)
+            this._errors.push(error)
             return undefined
-
         }
     }
 
     public create(content: string) {
+        this._errors=[]
         try {
             this.configData = JSON.parse(content)
+            this._logger.debug("Parsing of %s OK",this?.configData?.testName || "Unknown ")
+            let schemaOK:boolean=schemaValidator.validate(this.configData)
+            if(!schemaOK) {
+                this._errors=schemaValidator.getErrors()
+                return schemaOK
+            }
+            
             if (!this.configData?.config)
                 this.configData.config = JSON.parse("{}")
             if (this._base_url)
@@ -55,13 +67,16 @@ export class TestConfig extends TestBase {
             }
         }
         catch (error) {
-            this._logger.error(error)
+            this._logger.error(error.message)
+            this._errors.push(error)
             return false
-
         }
         return true
     }
-
+    public errors (){
+        return this._errors || []
+    }
+ 
     public setVariableValue(key: string, value: any) {
         let v = this._varMap.get(key)
         if (v) {

@@ -82,16 +82,16 @@ if (!server) {
 
     if (!test_file || !test_file.endsWith('.json')) {
         console.error("-f is mandatory and must end with .json")
-        process.exit(2)
+        process.exit(9)
     }
     testfile_path = path.parse(test_file)
     if (!testfile_path) {
         console.error("The specified test file %s is not valid", test_file)
-        process.exit(2)
+        process.exit(9)
     }
     if (result_dir && !fs.lstatSync(result_dir).isDirectory()) {
         console.error("The result_dir %s is not valid", result_dir)
-        process.exit(2)
+        process.exit(9)
     }
     if (!resultName)
         resultName = testfile_path.name
@@ -126,24 +126,33 @@ logger.info("url-xi(%s) started with %s", version, process.argv)
 run_cli()
 
 async function run_cli() {
+    let exitCode:number=0
     try {
-        let ok:boolean = false
         let testConfig: TestConfig = new TestConfig(headers, base_url,debug);
         let content:any=await testConfig.readFile(test_file);
+        exitCode=content? 0:5
         if(content) 
-            ok=testConfig.create(content)
-        if (ok && !parse_only) {
-           
+            exitCode=testConfig.create(content) ? 0:5
+        if(exitCode) {
+            let errors:Array<any>= testConfig.errors()
+            errors.forEach(error=> {
+                console.error(error)
+            })
+        }
+        if (exitCode === 0 && !parse_only) {   
             let testRunner: TestRunner = new TestRunner(testConfig, debug);
             let results:ITestResults=await testRunner.run();
+            exitCode= results.stepResults ? 0:1
             let resultProccessor: TestResultProcessor = new TestResultProcessor(results, debug)
             resultProccessor.viewResults();
             if (result_dir) {
-                resultProccessor.saveResults(result_dir,resultName)
+                await resultProccessor.saveResults(result_dir,resultName)
             }
         }
     } catch (error) {
         logger.error(error)
+        exitCode=1
     }
+    process.exit(exitCode)
 };
 

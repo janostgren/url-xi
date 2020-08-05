@@ -40,7 +40,7 @@ class TestRunner extends TestBase {
         let results: IAssertionResult[] = []
         assertions.forEach(assertion => {
             let ok: boolean = false
-            let description=this._testConfig.replaceWithVarVaule(assertion.description)
+            let description = this._testConfig.replaceWithVarVaule(assertion.description)
             let value: any = ""
             if (assertion.value)
                 value = this._testConfig.replaceWithVarVaule(assertion.value)
@@ -72,10 +72,10 @@ class TestRunner extends TestBase {
                     break;
             }
             result.success = ok
+
             result.failStep = (assertion?.failStep || false) && !ok
-
-            results.push(result)
-
+            if (!assertion?.reportFailOnly || !ok)
+                results.push(result)
         })
         return results
     }
@@ -88,7 +88,7 @@ class TestRunner extends TestBase {
                 let extractor: IExtractor = elem
 
                 let expression: string = this._testConfig.replaceWithVarVaule(extractor.expression)
-              
+
 
                 switch (extractor.type) {
                     case "jsonpath":
@@ -195,6 +195,7 @@ class TestRunner extends TestBase {
         stepResult.stepName = step.stepName
         stepResult.success = true
         stepResult.duration = 0
+        stepResult.startTime = Date.now()
         stepResult.ignoreDuration = step?.ignoreDuration || false
         stepResult.requestResults = []
         this._testConfig.setVariableValue("$stepName", step.stepName)
@@ -239,6 +240,7 @@ class TestRunner extends TestBase {
                     let stepConfig: AxiosRequestConfig = this.setConfigValues(config)
                     requestResult.config = stepConfig
                     let start: number = Date.now()
+                    requestResult.startTime = start
                     this._logger.debug("executing request: %s:%s", stepConfig?.method, stepConfig?.url)
                     let axError: AxiosError = JSON.parse("{}")
                     try {
@@ -270,7 +272,7 @@ class TestRunner extends TestBase {
                                 if (!stepResult.assertions)
                                     stepResult.assertions = []
                                 //stepResult.assertions = stepResult.assertions?.concat(stepResult.assertions, assres)
-                                assres.forEach( assertion =>  {
+                                assres.forEach(assertion => {
                                     stepResult.assertions?.push(assertion)
                                 })
                                 let failStep = assres.find(res => {
@@ -310,9 +312,10 @@ class TestRunner extends TestBase {
         results.testName = this._testConfig.configData.testName
         this._testConfig.setVariableValue("$testName", results.testName)
         results.baseURL = this._testConfig.configData.baseURL
-        results.success = true
+        results.success = false
         results.returnValue = 0
-        results.totalDuration = 0
+        results.duration = 0
+        results.startTime = Date.now()
         results.variables = this._testConfig.configData?.variables
         results.stepResults = []
         try {
@@ -337,7 +340,7 @@ class TestRunner extends TestBase {
                 results.stepResults.push(stepResult)
                 if (!stepResult.ignoreDuration)
                     results.returnValue += stepResult.duration
-                results.totalDuration += stepResult.duration
+                results.duration += stepResult.duration
             }
             results.success = !foundError
         } catch (error) {
@@ -356,7 +359,7 @@ class TestRunner extends TestBase {
                 results.returnValue = Number(retval.value)
             }
         }
-        this._logger.debug("Test success=%s, totalDuration=%d", results.success, results.totalDuration)
+        this._logger.debug("Test success=%s, duration=%d", results.success, results.duration)
         return results
     }
 }
