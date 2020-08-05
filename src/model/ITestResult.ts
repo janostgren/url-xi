@@ -40,5 +40,6 @@ export interface ITestResults extends IBaseResult {
     returnValue: number
    
     variables?: IVariable[],
+    errors?:object[]
     stepResults: IStepResult[]
 }

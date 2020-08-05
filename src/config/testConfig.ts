@@ -5,13 +5,14 @@ import { AxiosResponse, Method } from 'axios'
 import { TestBase } from '../lib/testbase'
 import { IExtractor, IRequestConfig, ITestStep, ITestConfigData, IVariable } from '../model/ITestConfig'
 import * as schemaValidator from '../processor/schemaValidator'
+import * as helpers from '../lib/helpers'
 import { Logger } from 'log4js';
 
 export class TestConfig extends TestBase {
     private _varMap: Map<string, IVariable> = new Map<string, IVariable>();
     private _headers: any
     private _base_url: string
-    private _errors:Array<any> 
+    private _errors:Array<object> 
     configData: ITestConfigData = {} as any;
 
     constructor(headers: any, base_url: string = '', debug: boolean = false) {
@@ -19,6 +20,16 @@ export class TestConfig extends TestBase {
         this._headers = headers
         this._base_url = base_url
         this._errors=[]
+    }
+
+    private _saveError(error:any) {
+        let s:string = JSON.stringify(error)
+        if( s === "{}") {
+            this._errors.push({"name":error.name ||"","message":error.message||error})  
+        }
+        else {
+            this._errors.push(error)
+        }
     }
 
     public async readFile(pathName: string) {
@@ -30,7 +41,7 @@ export class TestConfig extends TestBase {
         }
         catch(error) {
             this._logger.error(error)
-            this._errors.push(error)
+            this._saveError(error)
             return undefined
         }
     }
@@ -67,8 +78,8 @@ export class TestConfig extends TestBase {
             }
         }
         catch (error) {
-            this._logger.error(error.message)
-            this._errors.push(error)
+            this._logger.error(error)
+            this._saveError(error)
             return false
         }
         return true

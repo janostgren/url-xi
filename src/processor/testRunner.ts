@@ -5,7 +5,7 @@ import Axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { TestBase } from '../lib/testbase'
 
 import * as helper from '../lib/helpers'
-//import jsonPath from 'jsonpath';
+
 import { JSONPath } from 'jsonpath-plus';
 import xpath from 'xpath';
 import xmldom from 'xmldom'

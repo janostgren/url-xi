@@ -10,49 +10,80 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path'
 import util from 'util';
+import * as helper from '../lib/helpers'
+
 
 export class TestResultProcessor extends TestBase {
-    private _results: ITestResults
-    constructor(results: ITestResults, debug: boolean = false) {
+   
+    constructor(debug:boolean = false) {
         super(debug, "TestResultProcessor")
-        this._results = results
     }
 
-    public async saveResults(result_dir: string, resultName?: string) {
-        if (!resultName)
-            resultName = "res_" + uuidv4()
+    private _createResultName (resultName?:string) {
+            return resultName || "res_" + uuidv4()
+    }
+
+    public async saveResults(results:ITestResults,result_dir: string, resultName?: string) {
+        
+        resultName=this._createResultName(resultName)
         let resultFile = path.resolve(result_dir, resultName + ".json")
         let writeFile = util.promisify(fs.writeFile);
-        let res:string= JSON.stringify(this._results)
+        let res:string= JSON.stringify(results)
+        await writeFile(resultFile, res)
+        return res
+    }
+    public async saveErrors(content:string,errors:object[],result_dir: string, resultName?: string) {
+        
+        resultName=this._createResultName(resultName)
+       
+        let resultFile = path.resolve(result_dir, resultName + ".json")
+        let json:any={}
+        if(content) {
+            json = helper.toJson(content) || {}  
+        }
+        let results:ITestResults={
+            "testName":json.testName || resultName,
+            "baseURL":json.baseURL || "",
+            "success":false,
+            "duration":0,
+            "startTime":Date.now(),
+            "returnValue":-1,
+            "stepResults": []
+        } 
+        results.errors=errors
+        let writeFile = util.promisify(fs.writeFile);
+        let res:string= JSON.stringify(results)
         await writeFile(resultFile, res)
         return res
     }
 
-    public viewResults() {
-        console.log("\n----- Process results [%s] -----\n", this._results.testName)
-        if (this._results.variables) {
+    public viewResults(results:ITestResults) {
+        console.log("\n----- Process results [%s] -----\n",results.testName)
+        if (results.variables) {
             console.log("----- Variables values -----")
-            for (let idx: number = 0; idx < this._results.variables.length; idx++) {
-                let variable: IVariable = this._results.variables[idx]
+            for (let idx: number = 0; idx <results.variables.length; idx++) {
+                let variable: IVariable =results.variables[idx]
                 console.log("\tname=%s , value=%s , usage=%s", variable.key, variable.value, variable.usage || "internal")
             }
             console.log("")
         }
         console.log("----- Steps result -----")
-        for (let idx: number = 0; idx < this._results.stepResults.length; idx++) {
-            let stepResult: IStepResult = this._results.stepResults[idx]
-            console.log("\tStep Name [%s] : success=%s, duration=%d, ignore duration=%s", stepResult.stepName, stepResult.success, stepResult.duration, stepResult.ignoreDuration)
+        for (let idx: number = 0; idx <results.stepResults.length; idx++) {
+            let stepResult: IStepResult =results.stepResults[idx]
+            console.log("\tStep Name [%s] : success=%s, duration=%d, start time=%s, ignore duration=%s", stepResult.stepName, stepResult.success, stepResult.duration,new Date(stepResult.startTime).toISOString(), stepResult.ignoreDuration)
             stepResult.requestResults.forEach(requestResult => {
-                console.log("\t\t %s [%s] : success=%s, duration=%d, status=(%d : %s)",
-                    requestResult.config?.url, requestResult.config?.method?.toLocaleUpperCase(), requestResult.success, requestResult.duration,
+                console.log("\t\t %s [%s] : success=%s, duration=%d, start time=%s, status=(%d : %s)",
+                    requestResult.config?.url, requestResult.config?.method?.toLocaleUpperCase()|| "GET", requestResult.success, requestResult.duration,
+                    new Date(requestResult.startTime).toISOString(),
                     requestResult.status, requestResult.statusText)
             }
             )
         }
         console.log("-----[Test Summary] -----")
-        console.log("Total Response Time: %d", this._results.duration)
-        console.log("Number of steps: %d", this._results?.stepResults?.length || 0)
-        console.log("Return value: %d", this._results.returnValue)
-        console.log("Result success: %s", this._results.success)
+        console.log("Total Response Time: %d",results.duration)
+        console.log("Start Time: %s",new Date(results.startTime).toISOString())
+        console.log("Number of steps: %d",results?.stepResults?.length || 0)
+        console.log("Return value: %d",results.returnValue)
+        console.log("Result success: %s",results.success)
     }
 }

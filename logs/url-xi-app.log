@@ -1,0 +1,72 @@
+[2020-08-05T17:39:27.847] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s'
+]
+[2020-08-05T17:39:27.855] [INFO] url-xi - URL XI server (version 1.1.5) started on http port NaN
+[2020-08-05T17:44:57.044] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s'
+]
+[2020-08-05T17:44:57.052] [INFO] url-xi - URL XI server (version 1.1.5) started on http port NaN
+[2020-08-05T17:46:08.514] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s'
+]
+[2020-08-05T17:46:08.524] [INFO] url-xi - URL XI server (version 1.1.5) started on http port NaN
+[2020-08-05T17:46:39.954] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s'
+]
+[2020-08-05T17:46:39.960] [INFO] url-xi - port=undefined
+[2020-08-05T17:46:39.962] [INFO] url-xi - URL XI server (version 1.1.5) started on http port NaN
+[2020-08-05T17:49:23.351] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s'
+]
+[2020-08-05T17:49:23.357] [INFO] url-xi - port=8066
+[2020-08-05T17:49:23.360] [INFO] url-xi - URL XI server (version 1.1.5) started on http port 8066
+[2020-08-05T17:50:29.582] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s',
+  '-p',
+  '8077'
+]
+[2020-08-05T17:50:29.598] [INFO] url-xi - URL XI server (version 1.1.5) started on http port 8066
+[2020-08-05T17:52:03.484] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s',
+  '-p',
+  '8077'
+]
+[2020-08-05T17:52:03.498] [INFO] url-xi - URL XI server (version 1.1.5) started on http port 8066
+[2020-08-05T17:52:41.115] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s',
+  '--port',
+  '8077'
+]
+[2020-08-05T17:52:41.123] [INFO] url-xi - URL XI server (version 1.1.5) started on http port 8066
+[2020-08-05T17:57:15.674] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s',
+  '--port',
+  '8077'
+]
+[2020-08-05T17:57:15.686] [INFO] url-xi - URL XI server (version 1.1.5) started on http port 8077
+[2020-08-05T17:58:07.564] [INFO] url-xi - url-xi(1.1.5) started with [
+  '/usr/local/bin/node',
+  '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
+  '-s',
+  '--port',
+  '8077'
+]
+[2020-08-05T17:58:07.573] [INFO] url-xi - URL XI server (version 1.1.5) started on http port 8077
