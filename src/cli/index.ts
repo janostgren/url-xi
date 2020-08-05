@@ -52,7 +52,7 @@ var server: string, port: number
 var testfile_path: any
 
 
-let version = "1.1.5"
+let version = "1.6.0"
 
 let program = new Command();
 program.version(version);

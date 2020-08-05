@@ -177,7 +177,7 @@
                         {
                             "type": "javaScript",
                             "value": "{{origin}}",
-                            "description": "Return origin should contain an IP address. Method={{method}}",
+                            "description": "Returned origin should contain an IP address. Method={{method}}",
                             "expression": "/^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$/.test(value)",
                             "failStep": true,
                             "reportFailOnly":true
