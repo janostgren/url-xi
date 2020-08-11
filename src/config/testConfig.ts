@@ -46,7 +46,7 @@ export class TestConfig extends TestBase {
         }
     }
 
-    public create(content: string) {
+    public create(content: string,base_url?:string) {
         this._errors=[]
         try {
             this.configData = JSON.parse(content)
@@ -56,11 +56,13 @@ export class TestConfig extends TestBase {
                 this._errors=schemaValidator.getErrors()
                 return schemaOK
             }
+            if(!base_url)
+                base_url= this._base_url
             
             if (!this.configData?.config)
                 this.configData.config = JSON.parse("{}")
-            if (this._base_url)
-                this.configData.baseURL = this._base_url
+            if (base_url)
+                this.configData.baseURL = base_url
             if (this.configData.config?.headers)
                 this.configData.config.headers = Object.assign(this.configData.config.headers, this._headers)
             else if (this.configData.config)

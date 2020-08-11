@@ -262,6 +262,7 @@ Options:
   -xh, --xheaders <headers>         extra headers (default: "{}")
   -u, --url <url>                   base url
   -d, --debug                       output extra debugging
+  -nd, --nodata                     No response data in in report
   -po, --parse_only                 parse json only. No not run
   -rn, --result_name <result_name>  name of the result
   -s, --server                      start as server
@@ -273,7 +274,7 @@ Options:
 
 ```
 url-xi -s
-[2020-08-05T22:30:41.244] [INFO] url-xi - url-xi(1.1.5) started with [
+[2020-08-05T22:30:41.244] [INFO] url-xi - url-xi(1.8.1) started with [
   '/usr/local/bin/node',
   '/Users/janostgren/work/node/url-xi/dist/cli/index.js',
   '-s'
@@ -283,6 +284,10 @@ url-xi -s
 ### API
  POST http://localhost:8066/api/url-xi/run - Run a test case
  POST http://localhost:8066/api/url-xi/parse - Parse a test case
+ ### Supported query parameter
+ - nodata = Produce result without data
+ - baseUrl = change the base URL. Qual as -u parameter in cli interface
+
 
  ```
  curl  -i -X POST -d @./samples/default_test.json http:/localhost:8066/api/url-xi/parse -H "Content-Type: application/json; charset=UTF-8"

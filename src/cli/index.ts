@@ -7,7 +7,7 @@ import { TestResultProcessor } from '../processor/testResultProcessor';
 import * as log4js from "log4js";
 import path from 'path'
 import fs from 'fs'
-import express from 'express' 
+import express  from 'express' 
 import * as apiRouter from '../server/router/apiRouter'
 import * as body_parser from 'body-parser' 
 
@@ -20,13 +20,12 @@ const cliLogConfig =
             "type": "file",
             "filename": "log/url-xi.log",
             "maxLogSize": 10485760,
-            "numBackups": 3,
-            "Append": false
+            "numBackups": 3
+           
         },
         "errorFile": {
             "type": "file",
-            "filename": "log/url-xi-error.log",
-            "Append": false
+            "filename": "log/url-xi-error.log"
         },
         "errors": {
             "type": "logLevelFilter",
@@ -37,7 +36,6 @@ const cliLogConfig =
         {
             "type": "stdout"
         }
-
     },
     "categories": {
         "default": { "appenders": ["app", "errors", "out"], "level": "INFO" }
@@ -47,12 +45,13 @@ const cliLogConfig =
 
 var test_file: string, result_dir: string, headers: any, debug: boolean
 var parse_only: boolean, resultName: string
+var nodata:boolean
 var base_url: string
 var server: string, port: number
 var testfile_path: any
 
 
-let version = "1.6.0"
+let version = "1.8.1"
 
 let program = new Command();
 program.version(version);
@@ -63,10 +62,11 @@ program
     .option('-xh, --xheaders <headers>', 'extra headers', '{}')
     .option('-u, --url <url>', 'base url')
     .option('-d, --debug', 'output extra debugging')
+    .option('-nd, --nodata', 'no response data in report')
     .option('-po, --parse_only', 'parse json only. No not run')
     .option('-rn, --result_name <result_name>', 'name of the result')
     .option('-s, --server', 'start as server')
-    .option('-p, --port <port>', 'server port', '8066')
+    .option('-p, --port <port>', 'server port', '8070')
 
 program.parse(process.argv);
 
@@ -78,6 +78,7 @@ headers = JSON.parse(program.xheaders)
 base_url = program.url
 debug = program.debug
 parse_only = program.parse_only
+nodata =program.nodata
 resultName = program.result_name
 server = program.server
 port = Number(program.port)
@@ -151,7 +152,7 @@ async function run_cli() {
         }
         if (exitCode === 0 && !parse_only) {
             let testRunner: TestRunner = new TestRunner(testConfig, debug);
-            let results: ITestResults = await testRunner.run();
+            let results: ITestResults = await testRunner.run(nodata);
             exitCode = results.stepResults ? 0 : 1
             resultProcessor.viewResults(results);
             if (result_dir) {
@@ -163,23 +164,34 @@ async function run_cli() {
         exitCode = 1
     }
     process.exit(exitCode)
-};
+}
+
+function mapStatic(app:express.Application,dir:string,pathDir:string) {
+    let staticDir:string = path.join(__dirname, dir)
+    app.use(pathDir, express.static(staticDir))
+    logger.info ("Static dir %s mapped to path=%s",pathDir,staticDir)
+
+}
 
 function run_server() {
-    var app = express();
-    
 
+    let app:express.Application = express()
     app.use(body_parser.urlencoded({ extended: true }));
     app.use(body_parser.json());
     app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
-    app.use(express.static('public'));
-
     var router = express.Router();  
     router.use(apiRouter.router)
     app.use('/api', router);
-    
+    app.get('/', function(req, res) {
+        res.sendFile(path.join(__dirname + '../../../client/index.html'));
+    });
+   
+
+    mapStatic(app,'../../client/resources','/resources')
+    //mapStatic(app,'../../node_modules','/module')
+    //mapStatic(app,'../../dist/client','/client')
+ 
     app.listen(port, () =>
     logger.info("URL XI server (version %s) started on http port %d" ,version,port));
-
 }
 

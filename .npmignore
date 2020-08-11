@@ -1,9 +1,11 @@
 node_modules
 log
+test
 package-lock.json
 results
 src/*
 tsconfig.json
+tsconfig.browser.json
 samples/internal
 .vscode
 .git

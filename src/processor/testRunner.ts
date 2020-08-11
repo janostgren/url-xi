@@ -190,7 +190,7 @@ export class TestRunner extends TestBase {
         })
     }
 
-    private async runTestStep(step: ITestStep, api: Api) {
+    private async runTestStep(step: ITestStep, api: Api,nodata:boolean) {
         let stepResult: IStepResult = JSON.parse("{}")
         stepResult.stepName = step.stepName
         stepResult.success = true
@@ -288,7 +288,7 @@ export class TestRunner extends TestBase {
                     requestResult.status = response.status
                     requestResult.statusText = response?.statusText
                     requestResult.headers = response.headers
-                    if (!request.notSaveData)
+                    if (!nodata && !request.notSaveData)
                         requestResult.data = response?.data
                     requestResult.duration = Date.now() - start
                     requestResult.error = axError
@@ -307,7 +307,7 @@ export class TestRunner extends TestBase {
         return stepResult
     }
 
-    public async run() {
+    public async run(nodata?:boolean) {
         let results: ITestResults = JSON.parse("{}")
         results.testName = this._testConfig.configData.testName
         this._testConfig.setVariableValue("$testName", results.testName)
@@ -334,7 +334,7 @@ export class TestRunner extends TestBase {
             for (let idx: number = 0; !foundError && idx < this._testConfig.configData.steps.length; idx++) {
                 let testStep: ITestStep = this._testConfig.configData.steps[idx];
                 this._logger.debug("Running step %s ", testStep.stepName)
-                let stepResult = await this.runTestStep(testStep, api)
+                let stepResult = await this.runTestStep(testStep, api,nodata || false)
                 foundError = !stepResult.success
                 this._logger.debug("Step success=%s, duration=%d", stepResult.success, stepResult.duration)
                 results.stepResults.push(stepResult)
