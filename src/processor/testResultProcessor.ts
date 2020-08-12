@@ -28,7 +28,7 @@ export class TestResultProcessor extends TestBase {
         resultName=this._createResultName(resultName)
         let resultFile = path.resolve(result_dir, resultName + ".json")
         let writeFile = util.promisify(fs.writeFile);
-        let res:string= JSON.stringify(results)
+        let res:string= JSON.stringify(results,null,2)
         await writeFile(resultFile, res)
         return res
     }

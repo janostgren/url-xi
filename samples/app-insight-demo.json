@@ -94,7 +94,7 @@
                         {
                             "type": "javaScript",
                             "value": "{{pageViewDuration}}",
-                            "description": "Duration should be greather than 1 ms",
+                            "description": "Duration should be greater than 1 ms",
                             "expression": "value > 1",
                             "failStep": true
                         },

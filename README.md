@@ -68,6 +68,128 @@ Variables are used for storing values of extractors or as input parameters.
         }
     ]
 ```
+## Iterator
+You can use an iterator to iterate a step in several laps. An iterator can be based on a number or an array. Variable substitution is supported for the value of the iterator. The variable must be of type array and extraction must have the array flag.
+
+### Extractor for iterator 
+``` json 
+{
+    "type": "regexp",
+    "expression": "<script\\s+src=\"(.+)\">\\s+<\/script>",
+   "variable": "javaScripts",
+   "array": true
+}
+``` 
+### Step Example 1 - Get extracted Java Scripts 
+``` json 
+{
+            "stepName": "Get JavaScripts",
+            "iterator": {
+                "varName": "javaScript",
+                "value": "{{javaScripts}}"
+            },
+            "requests": [
+                {
+                    "config": {
+                        "method": "get",
+                        "url": "{{javaScript}}"
+                    },
+                    "extractors": [],
+                    "notSaveData": true
+                }
+            ]
+        },
+```
+### Step example 2 - Run all http methods
+``` json 
+{
+            "stepName": "HTTP Methods",
+            "iterator": {
+                "varName": "method",
+                "value": [
+                    "get",
+                    "post",
+                    "patch",
+                    "put",
+                    "delete"
+                ]
+            },
+            "requests": [
+                {
+                    "config": {
+                        "method": "{{method}}",
+                        "url": "/{{method}}",
+                        "data": "{\"testdata\":true,\"timestamp\":{{$timestamp}}}"
+                       
+                    },
+                    "extractors": [
+                        {
+                            "type": "header",
+                            "expression": "server",
+                            "variable": "server"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.origin",
+                            "variable": "origin"
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value": "{{origin}}",
+                            "description": "Returned origin should contain an IP address. Method={{method}}",
+                            "expression": "/^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$/.test(value)",
+                            "failStep": true,
+                            "reportFailOnly":true
+                        }
+                    ]
+                }
+            ]
+        }
+```
+## Request data as a string 
+Data in request as JSON is supported by default. If data is string format you must use an array for complex requests. Here comes a SOAP example with xml data.
+``` json
+{
+            "stepName": "Get Remaing Tickets for Game",
+            "requests": [
+                {
+                    "config": {
+                        "method": "post",
+                        "url": "/CheckGamesService.svc",
+                        "data": [
+                            "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:tem=\"http://tempuri.org/\">",
+                            "<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">",
+                            "<wsa:To>http://sesthbwb09p.apica.local:8001/CheckGamesService.svc</wsa:To>",
+                            "<wsa:Action>http://tempuri.org/ICheckGamesService/RemainingTicketsPerGameId</wsa:Action></soap:Header>",
+                            "<soap:Body>",
+                            "<tem:RemainingTicketsPerGameId>",
+                            "<tem:gameID>{{gameId}}</tem:gameID>",
+                            "<tem:isCachingOff>true</tem:isCachingOff>",
+                            "</tem:RemainingTicketsPerGameId>",
+                            "</soap:Body>",
+                            "</soap:Envelope>"
+                        ],
+                        "headers": {
+                            "SOAPAction": "http://tempuri.org/ICheckGamesService/RemainingTicketsPerGameId"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "xpath",
+                            "expression": "//*[local-name() = 'RemainingTicketsPerGameIdResult']/text()",
+                            "variable": "remainingTickets"
+                        }
+                    ]
+                }
+            ]
+        }
+```
+## Supported syntax for requests
+Url-xi is based on the Axios framework. It means that the axios syntax for request configuration can be used.
+See: https://www.npmjs.com/package/axios
+
 ## The test case schema 
 A test case is validated with by follow JSON schema
 ``` json
@@ -305,6 +427,21 @@ Connection: keep-alive
  ```
 
 # Samples
+Samples are found in the installation directory of url-xi.
+It is the global node directory followed by *url-xi/samples* 
+- Linux/Unix : */usr/local/lib/node_modules/url-xi/samples*
+- Windows : Dynamic. PC global installs happen under %APPDATA%:
+
+``` bash
+$ ls -l /usr/local/lib/node_modules/url-xi/samples
+total 80
+-rw-r--r--  1 janostgren  admin   4051 26 Okt  1985 app-insight-demo.json
+-rw-r--r--  1 janostgren  admin   4579 26 Okt  1985 cldemo_soap_game_service.json
+-rw-r--r--  1 janostgren  admin   3015 26 Okt  1985 default_test.json
+-rw-r--r--  1 janostgren  admin  10588 26 Okt  1985 http-bin-test.json
+-rw-r--r--  1 janostgren  admin    417 26 Okt  1985 tm_home.json
+-rw-r--r--  1 janostgren  admin   5944 26 Okt  1985 tm_order_tickets.json
+```
 
 ## Simple Example
 ``` json
@@ -329,7 +466,9 @@ Connection: keep-alive
 ## Advanced Sample - Application Insight
 Extract metrics from Microsoft Application Insight with the REST API.
 Return value of extracted metrics as the result of the test.
-Look at the variable named pageViewDuration
+Look at the variable named pageViewDuration. 
+The example also have advanced json path correlation. You get the index to the variable **pageViewIndex** and
+use it the next extractions. 
 
 ``` json
 {
@@ -447,6 +586,128 @@ Look at the variable named pageViewDuration
     ]
 }
 ```
+## Result report example 
+This example is without result data. The nodata switch is used.
+
+``` json
+{
+    "testName": "Application Insight Demo",
+    "baseURL": "https://api.applicationinsights.io",
+    "success": true,
+    "returnValue": 6995,
+    "duration": 1032,
+    "startTime": 1597227839118,
+    "variables": [
+        {
+            "key": "api_key",
+            "type": "string",
+            "usage": "",
+            "value": "DEMO_KEY"
+        },
+        {
+            "key": "application",
+            "type": "string",
+            "usage": "",
+            "value": "DEMO_APP"
+        },
+        {
+            "key": "aggregation",
+            "type": "string",
+            "usage": "",
+            "value": "avg"
+        },
+        {
+            "key": "pageViewName",
+            "type": "string",
+            "usage": "inResponse",
+            "value": "Home Page"
+        },
+        {
+            "key": "pageViewIndex",
+            "type": "number",
+            "usage": "",
+            "value": 0
+        },
+        {
+            "key": "pageViewDuration",
+            "type": "number",
+            "usage": "returnValue",
+            "value": 6995
+        }
+    ],
+    "stepResults": [
+        {
+            "stepName": "Get Page views",
+            "success": true,
+            "duration": 1032,
+            "startTime": 1597227839119,
+            "ignoreDuration": false,
+            "requestResults": [
+                {
+                    "duration": 1032,
+                    "success": true,
+                    "config": {
+                        "method": "post",
+                        "url": "/v1/apps/DEMO_APP/metrics",
+                        "data": [
+                            {
+                                "id": "Page Views duration per path for Edge",
+                                "parameters": {
+                                    "metricId": "pageViews/duration",
+                                    "aggregation": "avg",
+                                    "timespan": "PT240H",
+                                    "segment": "pageView/name,pageView/urlPath",
+                                    "filter": "startswith(client/browser,'Edg')"
+                                }
+                            }
+                        ],
+                        "headers": {
+                            "Accept": "application/json, text/plain, */*",
+                            "Content-Type": "application/json;charset=utf-8",
+                            "x-api-key": "DEMO_KEY",
+                            "User-Agent": "axios/0.19.2",
+                            "Content-Length": 222
+                        }
+                    },
+                    "startTime": 1597227839119,
+                    "status": 200,
+                    "statusText": "OK",
+                    "headers": {
+                        "date": "Wed, 12 Aug 2020 10:24:00 GMT",
+                        "content-type": "application/json; charset=utf-8",
+                        "content-length": "263",
+                        "connection": "close",
+                        "vary": "Accept-Encoding, Accept, Accept-Encoding",
+                        "strict-transport-security": "max-age=15724800; includeSubDomains",
+                        "via": "1.1 draft-oms-57889876d8-xgjgh",
+                        "x-content-type-options": "nosniff",
+                        "access-control-allow-origin": "*",
+                        "access-control-expose-headers": "Retry-After,Age,WWW-Authenticate,x-resource-identities,x-ms-status-location"
+                    },
+                    "error": {}
+                }
+            ],
+            "assertions": [
+                {
+                    "description": "Duration should be greater than 1 ms",
+                    "success": true,
+                    "value": "6995",
+                    "expression": "value > 1",
+                    "failStep": false
+                },
+                {
+                    "description": "Aggregation must be max,min or avg",
+                    "success": true,
+                    "value": "avg",
+                    "expression": "(max|min|avg)",
+                    "failStep": false
+                }
+            ]
+        }
+    ]
+}
+```
+
 
 
 

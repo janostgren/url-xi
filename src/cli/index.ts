@@ -10,6 +10,7 @@ import fs from 'fs'
 import express  from 'express' 
 import * as apiRouter from '../server/router/apiRouter'
 import * as body_parser from 'body-parser' 
+import * as pack from '../../package.json';
 
 
 const cliLogConfig =
@@ -51,7 +52,7 @@ var server: string, port: number
 var testfile_path: any
 
 
-let version = "1.8.1"
+let version = pack.version
 
 let program = new Command();
 program.version(version);
