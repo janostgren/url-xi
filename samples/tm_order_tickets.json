@@ -6,7 +6,7 @@
             "key": "email",
             "type": "string",
             "usage": "",
-            "value": "'kalle@acme.org'"
+            "value": "{{$faker.internet.email}}"
         },
         {
             "key": "eventId",

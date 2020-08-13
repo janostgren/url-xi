@@ -10,7 +10,7 @@ import fs from 'fs'
 import express  from 'express' 
 import * as apiRouter from '../server/router/apiRouter'
 import * as body_parser from 'body-parser' 
-import * as pack from '../../package.json';
+import * as helpers from  '../lib/helpers'
 
 
 const cliLogConfig =
@@ -50,9 +50,9 @@ var nodata:boolean
 var base_url: string
 var server: string, port: number
 var testfile_path: any
+var pack:any=helpers.getPackageInfo()
 
-
-let version = pack.version
+let version = pack.version || 'version unknown'
 
 let program = new Command();
 program.version(version);

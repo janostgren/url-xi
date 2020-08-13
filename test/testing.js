@@ -1,24 +1,39 @@
-console.info("Testing")
-let e = "let arr=['max','min','avg'];arr[Math.floor(Math.random() * arr.length)]"
-try {
-    var v = eval(e)
-    var x = 44/0
-    var o = 12
-    var obj={"name":"tom","age":12}
-    let js=JSON.stringify(o)
-    let json= JSON.parse (obj)
 
-    console.info("eval=%s, js=%s", v,json)
-}
-catch (error) {
-    console.error(error.message,error.name)
-    let s = JSON.stringify(error)
-    if( s === "{}") {
-        errJson = {"name":error.name,"message":error.message}
-        console.log(errJson)
+var faker = require('faker')
+console.info("Testing")
+
+
+//let str = '"Kalle"'
+//console.log(isDotedString(str),unDotify(str))
+
+let name = faker.date.future(10)
+console.log (name)
+console.log(faker.fake("{{name.findName}}, {{name.firstName}} {{name.suffix}}"));
+
+let f = 'finance.mask'
+console.log(fakeData(f))
+
+
+
+
+
+
+function fakeData(str) {
+    try {
+    return faker.fake(`{{${str}}}`)
     }
-   
+    catch (e) {
+        return ""
+    }
+}
+
+function isDotedString (str){
+    return str && ((str.startsWith('"') && str.endsWith('"') ) || (str.startsWith("'") && str.endsWith("'")))
+}
+function unDotify(str) {
+    return isDotedString(str) ? str.substring(1,str.length-1):str
+}
+
 
     
 
-}

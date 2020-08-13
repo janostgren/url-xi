@@ -3,6 +3,7 @@ import {TestRunner} from '../../processor/testRunner'
 import { Logger,getLogger } from 'log4js';
 import { ITestResults } from '../../model/ITestResult'
 import * as express from 'express' 
+import * as helpers from  '../../lib/helpers'
 
 export class ApiController {
     private _testRunner:TestRunner
@@ -26,7 +27,7 @@ export class ApiController {
     public async run(request:express.Request,response:express.Response) {
         let base_url:string=request?.query?.baseUrl?.toString() || ""
         if(base_url) {
-            base_url=base_url.split('"').join('')
+            base_url=helpers.unDotify(base_url)
         }
         let ok:boolean=this._testConfig.create(JSON.stringify(request.body),base_url)
         if(!ok) {
