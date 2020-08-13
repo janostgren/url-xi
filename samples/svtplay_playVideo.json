@@ -1,0 +1,98 @@
+{
+    "testName": "SvtPlay Play Video",
+    "description": "Play a video from the documentary category",
+    "baseURL": "https://api.svt.se",
+    "variables": [
+        {
+            "key": "svtId",
+            "type": "string",
+            "usage": "",
+            "value": ""
+        },
+        {
+            "key": "videoSvtId",
+            "type": "string",
+            "usage": "",
+            "value": ""
+        }
+    ],
+    "steps": [
+        {
+            "stepName": "Get Random documentary",
+            "requests": [
+                {
+                    "config": {
+                        "url": "/contento/graphql",
+                        "params": {
+                            "ua": "svtplaywebb-play-render-prod-client",
+                            "operationName": "GenrePag",
+                            "variables": {
+                                "includes": "recommended",
+                                "cluster": [
+                                    "dokumentar"
+                                ]
+                            },
+                            "extensions": {
+                                "persistedQuery": {
+                                    "version": 1,
+                                    "sha256Hash": "868ba595956599c802d5bf45af0af6fec9765d8cead96728d6eff8ed64cb5238"
+                                }
+                            }
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.data.genres[0].selectionsForWeb[0].items[0].item.urls.svtplay",
+                            "variable": "urlSvtPlay"
+                        }
+    
+                    ]
+                },
+                {
+                    "config": {
+                        "url": "/contento/graphql",
+                        "params": {
+                            "ua": "svtplaywebb-play-render-prod-client",
+                            "operationName": "VideoPage",
+                            "variables": {
+                                "legacyIds": [
+                                    27601045
+                                ]
+                            },
+                            "extensions": {
+                                "persistedQuery": {
+                                    "version": 1,
+                                    "sha256Hash": "6ae6ce26d0925cfbeae7d521ab8f512d14609c6188d81d7cfaa00c52847fcc49"
+                                }
+                            }
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.data.listablesByEscenicId[0].svtId",
+                            "variable": "svtId"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.data.listablesByEscenicId[0].videoSvtId",
+                            "variable": "videoSvtId"
+                        }
+                    ]
+                }
+            ]
+            
+        },
+        {
+            "stepName": "Get Video Meta data",
+            "requests": [
+                {
+                    "config": {
+                        "url": "/video/{{videoSvtId}}"
+                    }
+                }
+            ]
+        }
+    ]
+}
