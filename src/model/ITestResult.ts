@@ -4,6 +4,7 @@ import {IVariable} from './ITestConfig'
 interface IBaseResult {
     startTime:number
     duration:number
+    contentLength:number
     success:boolean
 } 
 
@@ -36,7 +37,7 @@ export interface IStepResult extends IBaseResult{
 export interface ITestResults extends IBaseResult {
     testName: string,
     baseURL: string,
-   // totalDuration: number
+  
     returnValue: number
    
     variables?: IVariable[],

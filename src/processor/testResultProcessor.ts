@@ -46,6 +46,7 @@ export class TestResultProcessor extends TestBase {
             "baseURL":json.baseURL || "",
             "success":false,
             "duration":0,
+            "contentLength":0,
             "startTime":Date.now(),
             "returnValue":-1,
             "stepResults": []
@@ -70,10 +71,10 @@ export class TestResultProcessor extends TestBase {
         console.log("----- Steps result -----")
         for (let idx: number = 0; idx <results.stepResults.length; idx++) {
             let stepResult: IStepResult =results.stepResults[idx]
-            console.log("\tStep Name [%s] : success=%s, duration=%d, start time=%s, ignore duration=%s", stepResult.stepName, stepResult.success, stepResult.duration,new Date(stepResult.startTime).toISOString(), stepResult.ignoreDuration)
+            console.log("\tStep Name [%s] : success=%s, duration=%d, content-length=%d, start time=%s, ignore duration=%s", stepResult.stepName, stepResult.success, stepResult.duration,stepResult.contentLength,new Date(stepResult.startTime).toISOString(), stepResult.ignoreDuration)
             stepResult.requestResults.forEach(requestResult => {
-                console.log("\t\t %s [%s] : success=%s, duration=%d, start time=%s, status=(%d : %s)",
-                    requestResult.config?.url, requestResult.config?.method?.toLocaleUpperCase()|| "GET", requestResult.success, requestResult.duration,
+                console.log("\t\t %s [%s] : success=%s, duration=%d, content-length=%d,start time=%s, status=(%d : %s)",
+                    requestResult.config?.url, requestResult.config?.method?.toLocaleUpperCase()|| "GET", requestResult.success, requestResult.duration,requestResult.contentLength,
                     new Date(requestResult.startTime).toISOString(),
                     requestResult.status, requestResult.statusText)
             }
@@ -83,6 +84,7 @@ export class TestResultProcessor extends TestBase {
         console.log("Total Response Time: %d",results.duration)
         console.log("Start Time: %s",new Date(results.startTime).toISOString())
         console.log("Number of steps: %d",results?.stepResults?.length || 0)
+        console.log("Total Content length: %d",results.contentLength)
         console.log("Return value: %d",results.returnValue)
         console.log("Result success: %s",results.success)
     }

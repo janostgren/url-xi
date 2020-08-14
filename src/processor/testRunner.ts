@@ -1,4 +1,4 @@
-import { ITestStep, IExtractor, IRequest, IRequestConfig, IStepIterator, IAssertion } from '../model/ITestConfig'
+import { ITestStep, IExtractor, IRequest, IRequestConfig, IStepIterator, IAssertion, ITransformer } from '../model/ITestConfig'
 import { IRequestResult, IStepResult, ITestResults, IAssertionResult } from '../model/ITestResult'
 import { TestConfig } from '../config/testConfig'
 import Axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
@@ -34,6 +34,31 @@ export class TestRunner extends TestBase {
         let s: string = this._testConfig.replaceWithVarVaule(jsonStr)
         let ret: any = JSON.parse(s)
         return ret
+    }
+
+    private transform(transformers: ITransformer[]) {
+        transformers.forEach(transformer => {
+            let vars = transformer.target.split(",")
+            let value = this._testConfig.replaceWithVarVaule(transformer.source)
+            let regExp: RegExp = new RegExp(transformer.expression)
+            let results = regExp.exec(value)
+            if (results) {
+                if (results.length === 1) {
+                    if(vars.length > 0 )
+                    this._testConfig.setVariableValue(vars[0], results[0])
+
+                }
+                else {
+                    for (let idx: number = 1; idx < results.length; idx++) {
+                        if (vars.length >= idx) {
+                            this._testConfig.setVariableValue(vars[idx - 1], results[idx])
+                        }
+                    }
+                }
+            }
+
+        });
+
     }
 
     private validate(assertions: IAssertion[]) {
@@ -190,11 +215,12 @@ export class TestRunner extends TestBase {
         })
     }
 
-    private async runTestStep(step: ITestStep, api: Api,nodata:boolean) {
+    private async runTestStep(step: ITestStep, api: Api, nodata: boolean) {
         let stepResult: IStepResult = JSON.parse("{}")
         stepResult.stepName = step.stepName
         stepResult.success = true
         stepResult.duration = 0
+        stepResult.contentLength = 0
         stepResult.startTime = Date.now()
         stepResult.ignoreDuration = step?.ignoreDuration || false
         stepResult.requestResults = []
@@ -214,6 +240,8 @@ export class TestRunner extends TestBase {
                 laps = iterator.value || 1
             let varName: string = iterator.varName
             for (let lap: number = 0; !foundError && lap < laps; lap++) {
+                this._testConfig.setVariableValue("$lap", lap)
+                this._testConfig.setVariableValue("$lapIdx1", lap + 1)
                 if (varName) {
                     let val = iterator.value?.length ? iterator.value[lap] : Number(lap + 1)
                     this._testConfig.setVariableValue(varName, val)
@@ -241,6 +269,7 @@ export class TestRunner extends TestBase {
                     requestResult.config = stepConfig
                     let start: number = Date.now()
                     requestResult.startTime = start
+                    requestResult.contentLength = 0
                     this._logger.debug("executing request: %s:%s", stepConfig?.method, stepConfig?.url)
                     let axError: AxiosError = JSON.parse("{}")
                     try {
@@ -266,6 +295,9 @@ export class TestRunner extends TestBase {
                         if (request.extractors) {
                             this.extractValues(request.extractors, response)
                         }
+                        if (request.transformers) {
+                            this.transform(request.transformers)
+                        }
                         if (!foundError && request.assertions) {
                             let assres: IAssertionResult[] = this.validate(request.assertions)
                             if (assres.length) {
@@ -288,6 +320,10 @@ export class TestRunner extends TestBase {
                     requestResult.status = response.status
                     requestResult.statusText = response?.statusText
                     requestResult.headers = response.headers
+                    let cl = response.headers["content-length"]
+                    if (cl)
+                        requestResult.contentLength = Number(cl)
+                    this._testConfig.setVariableValue("$contentLength", requestResult.contentLength)
                     if (!nodata && !request.notSaveData)
                         requestResult.data = response?.data
                     requestResult.duration = Date.now() - start
@@ -295,6 +331,7 @@ export class TestRunner extends TestBase {
                     requestResult.success = !foundError
                     stepResult.requestResults.push(requestResult)
                     stepResult.duration += requestResult.duration
+                    stepResult.contentLength += requestResult.contentLength
                     this._logger.debug("Request success=%s, status=%d statusText=%s", !foundError, requestResult.status, requestResult.statusText)
                     if (foundError)
                         stepResult.success = false
@@ -307,7 +344,7 @@ export class TestRunner extends TestBase {
         return stepResult
     }
 
-    public async run(nodata?:boolean) {
+    public async run(nodata?: boolean) {
         let results: ITestResults = JSON.parse("{}")
         results.testName = this._testConfig.configData.testName
         this._testConfig.setVariableValue("$testName", results.testName)
@@ -315,6 +352,7 @@ export class TestRunner extends TestBase {
         results.success = false
         results.returnValue = 0
         results.duration = 0
+        results.contentLength = 0
         results.startTime = Date.now()
         results.variables = this._testConfig.configData?.variables
         results.stepResults = []
@@ -334,13 +372,14 @@ export class TestRunner extends TestBase {
             for (let idx: number = 0; !foundError && idx < this._testConfig.configData.steps.length; idx++) {
                 let testStep: ITestStep = this._testConfig.configData.steps[idx];
                 this._logger.debug("Running step %s ", testStep.stepName)
-                let stepResult = await this.runTestStep(testStep, api,nodata || false)
+                let stepResult = await this.runTestStep(testStep, api, nodata || false)
                 foundError = !stepResult.success
                 this._logger.debug("Step success=%s, duration=%d", stepResult.success, stepResult.duration)
                 results.stepResults.push(stepResult)
                 if (!stepResult.ignoreDuration)
                     results.returnValue += stepResult.duration
                 results.duration += stepResult.duration
+                results.contentLength += stepResult.contentLength
             }
             results.success = !foundError
         } catch (error) {

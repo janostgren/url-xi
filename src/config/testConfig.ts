@@ -107,11 +107,6 @@ export class TestConfig extends TestBase {
     }
 
 
-
-
-
-
-
     public replaceWithVarVaule(str: string) {
         let vars: Map<string, IVariable> = this._varMap
         let ret: any = ""
@@ -125,13 +120,10 @@ export class TestConfig extends TestBase {
                         try {
                             let fakeAsset = y.substr(FAKER_PREFIX.length)
                             ret = faker.fake(`{{${fakeAsset}}}`)
-
                         }
                         catch (e) {
                             ret = ""
                         }
-
-
                     } else {
                         let v = vars.get(y)
                         if (v) {

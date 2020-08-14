@@ -2,7 +2,6 @@ import { Method} from 'axios'
 
 export type AssertionType = 'regexp' | 'javaScript' | 'value'
 
-
 export interface IAssertion {
     description:string
     type:AssertionType
@@ -11,6 +10,12 @@ export interface IAssertion {
     failStep?:boolean
     reportFailOnly?:boolean
 }
+
+export interface ITransformer {
+    source:string
+    target:string
+    expression:string
+} 
 
 export interface IRequestConfig {
     
@@ -26,6 +31,7 @@ export interface IRequest {
     extractors?: IExtractor[]
     expectedStatus?:number
     assertions?:IAssertion[]
+    transformers?:ITransformer[]
     notSaveData?:boolean
 }
 

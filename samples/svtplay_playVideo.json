@@ -4,6 +4,12 @@
     "baseURL": "https://api.svt.se",
     "variables": [
         {
+            "key": "format",
+            "type": "string",
+            "usage": "",
+            "value": "dash-avc"
+        },
+        {
             "key": "svtId",
             "type": "string",
             "usage": "",
@@ -13,6 +19,24 @@
             "key": "videoSvtId",
             "type": "string",
             "usage": "",
+            "value": ""
+        },
+        {
+            "key": "legacyId",
+            "type": "number",
+            "usage": "",
+            "value": 0
+        },
+        {
+            "key": "programTitle",
+            "type": "string",
+            "usage": "inResponse",
+            "value": ""
+        },
+        {
+            "key": "episodeTitle",
+            "type": "string",
+            "usage": "inResponse",
             "value": ""
         }
     ],
@@ -46,7 +70,13 @@
                             "expression": "$.data.genres[0].selectionsForWeb[0].items[0].item.urls.svtplay",
                             "variable": "urlSvtPlay"
                         }
-    
+                    ],
+                    "transformers": [
+                        {
+                            "source": "{{urlSvtPlay}}",
+                            "target": "legacyId, videoName",
+                            "expression": "\\/video\/(\\d+)\/(.+)"
+                        }
                     ]
                 },
                 {
@@ -57,7 +87,7 @@
                             "operationName": "VideoPage",
                             "variables": {
                                 "legacyIds": [
-                                    27601045
+                                    "{{legacyId}}"
                                 ]
                             },
                             "extensions": {
@@ -82,7 +112,6 @@
                     ]
                 }
             ]
-            
         },
         {
             "stepName": "Get Video Meta data",
@@ -90,6 +119,28 @@
                 {
                     "config": {
                         "url": "/video/{{videoSvtId}}"
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.programTitle",
+                            "variable": "programTitle"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.episodeTitle",
+                            "variable": "episodeTitle"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.videoReferences[?(@.format =='{{format}}')].resolve",
+                            "variable": "resolver"
+                        } 
+                    ]
+                },
+                {
+                    "config": {
+                        "url": "{{resolver}}"
                     }
                 }
             ]

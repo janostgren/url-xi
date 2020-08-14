@@ -50,6 +50,23 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "SvtPlay Play Video",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/dist/cli",
+            "args": [
+                "-f",
+                "samples/svtplay_playVideo.json",
+                "--debug"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "TM Order tickets",
             "skipFiles": [
                 "<node_internals>/**"
