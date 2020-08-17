@@ -5,7 +5,7 @@
         {
             "key": "email",
             "type": "string",
-            "usage": "",
+            "usage": "inResponse",
             "value": "{{$faker.internet.email}}"
         },
         {
@@ -35,7 +35,7 @@
         {
             "key": "bookingId",
             "type": "number",
-            "usage": "",
+            "usage": "inResponse",
             "value": 0
         }
     ],

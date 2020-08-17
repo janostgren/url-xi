@@ -14,6 +14,13 @@ import { Api } from '../lib/api';
 import { TestResultProcessor } from './testResultProcessor';
 import { Logger } from 'log4js'
 import { apiConfig } from '../lib/api.config'
+
+const resultConfig = {
+    contentLength: {
+        maxRequestLength: 64 * 1024,
+        maxTotalLength: 256 * 1024
+    }
+}
 export class TestRunner extends TestBase {
 
     private _testConfig: TestConfig
@@ -23,9 +30,13 @@ export class TestRunner extends TestBase {
     }
 
     public setConfigValues(config: IRequestConfig) {
+        let regex = /{{.*}}/
         let jsonStr: string = JSON.stringify(config)
-        let s: string = this._testConfig.replaceWithVarVaule(jsonStr)
-        let ret: AxiosRequestConfig = JSON.parse(s)
+        while (regex.test(jsonStr)) {
+            jsonStr = this._testConfig.replaceWithVarVaule(jsonStr)
+        }
+        let ret: AxiosRequestConfig = JSON.parse(jsonStr)
+
         return ret
     }
 
@@ -39,26 +50,35 @@ export class TestRunner extends TestBase {
     private transform(transformers: ITransformer[]) {
         transformers.forEach(transformer => {
             let vars = transformer.target.split(",")
-            let value = this._testConfig.replaceWithVarVaule(transformer.source)
-            let regExp: RegExp = new RegExp(transformer.expression)
-            let results = regExp.exec(value)
-            if (results) {
-                if (results.length === 1) {
-                    if(vars.length > 0 )
-                    this._testConfig.setVariableValue(vars[0], results[0])
-
-                }
-                else {
-                    for (let idx: number = 1; idx < results.length; idx++) {
-                        if (vars.length >= idx) {
-                            this._testConfig.setVariableValue(vars[idx - 1], results[idx])
+            let value: string = this._testConfig.replaceWithVarVaule(transformer.source)
+            switch (transformer.type) {
+                case 'extract':
+                    let regExp: RegExp = new RegExp(transformer.from)
+                    let results = regExp.exec(value)
+                    if (results) {
+                        if (results.length === 1) {
+                            if (vars.length > 0)
+                                this._testConfig.setVariableValue(vars[0], results[0])
+                        }
+                        else {
+                            for (let idx: number = 1; idx < results.length; idx++) {
+                                if (vars.length >= idx) {
+                                    this._testConfig.setVariableValue(vars[idx - 1], results[idx])
+                                }
+                            }
                         }
                     }
-                }
+                    break;
+                case 'replace':
+                    if (transformer.to) {
+                        let newValue: string = value.replace(transformer.from, transformer.to)
+                        for (let idx: number = 0; idx < vars.length; idx++) {
+                            this._testConfig.setVariableValue(vars[idx], newValue)
+                        }
+                    }
             }
 
         });
-
     }
 
     private validate(assertions: IAssertion[]) {
@@ -266,11 +286,12 @@ export class TestRunner extends TestBase {
 
                     let response: AxiosResponse = JSON.parse("{}");
                     let stepConfig: AxiosRequestConfig = this.setConfigValues(config)
+
                     requestResult.config = stepConfig
                     let start: number = Date.now()
                     requestResult.startTime = start
                     requestResult.contentLength = 0
-                    this._logger.debug("executing request: %s:%s", stepConfig?.method, stepConfig?.url)
+                    this._logger.debug("executing request: %s:%s", stepConfig?.method || 'get', stepConfig?.url)
                     let axError: AxiosError = JSON.parse("{}")
                     try {
                         response = await api.request(stepConfig)
@@ -321,10 +342,23 @@ export class TestRunner extends TestBase {
                     requestResult.statusText = response?.statusText
                     requestResult.headers = response.headers
                     let cl = response.headers["content-length"]
-                    if (cl)
+                    if (cl !== undefined)
                         requestResult.contentLength = Number(cl)
+                    else if (response.data) {
+                        if (typeof response.data === 'string')
+                            requestResult.contentLength = response.data.length
+                        else {
+                            requestResult.contentLength = JSON.stringify(response.data)?.length || 0
+                        }
+                    }
+
+
                     this._testConfig.setVariableValue("$contentLength", requestResult.contentLength)
-                    if (!nodata && !request.notSaveData)
+                    let bigContent: boolean = requestResult.contentLength > resultConfig.contentLength.maxRequestLength
+                    if (bigContent)
+                        this._logger.debug("Content length [%d] is greater than max length to save [%d]. Result not saved ",
+                            requestResult.contentLength, resultConfig.contentLength.maxRequestLength)
+                    if (!bigContent && !nodata && !request.notSaveData)
                         requestResult.data = response?.data
                     requestResult.duration = Date.now() - start
                     requestResult.error = axError
@@ -354,48 +388,80 @@ export class TestRunner extends TestBase {
         results.duration = 0
         results.contentLength = 0
         results.startTime = Date.now()
-        results.variables = this._testConfig.configData?.variables
-        results.stepResults = []
-        try {
-            let config: AxiosRequestConfig = {
-            }
-            if (this._testConfig.configData.config) {
-                config = this.setConfigValues(this._testConfig.configData.config)
-            }
-            if (!config.headers)
-                config.headers = {
-                    "Content-Type": "application/json"
+        results.variables = []
+        if (this._testConfig.configData?.variables) {
+            let errors: any = []
+            this._testConfig.configData.variables.forEach(variable => {
+                switch (variable.usage) {
+                    case 'inResponse':
+                    case 'returnValue':
+                    case 'input':
+                        results.variables?.push(variable)
+                        if (variable.validation !== undefined) {
+                            try {
+                                let value = variable.value
+                                let ok: boolean = eval(variable.validation) ? true : false
+                                if (!ok) {
+                                    let message: string = `Validation of input parameter ${variable.key} failed. Value=${value}`
+                                    this._logger.error(message)
+                                    errors.push(message)
+                                }
+
+                            }
+                            catch (error) {
+                                errors.push(error.message)
+
+                            }
+                        }
                 }
-            config.baseURL = this._testConfig.replaceWithVarVaule(this._testConfig.configData.baseURL)
-            let api: Api = new Api(config);
-            let foundError: boolean = false
-            for (let idx: number = 0; !foundError && idx < this._testConfig.configData.steps.length; idx++) {
-                let testStep: ITestStep = this._testConfig.configData.steps[idx];
-                this._logger.debug("Running step %s ", testStep.stepName)
-                let stepResult = await this.runTestStep(testStep, api, nodata || false)
-                foundError = !stepResult.success
-                this._logger.debug("Step success=%s, duration=%d", stepResult.success, stepResult.duration)
-                results.stepResults.push(stepResult)
-                if (!stepResult.ignoreDuration)
-                    results.returnValue += stepResult.duration
-                results.duration += stepResult.duration
-                results.contentLength += stepResult.contentLength
-            }
-            results.success = !foundError
-        } catch (error) {
-            this._logger.error(error)
+
+            })
+            if (errors.length)
+                results.errors = errors
         }
-        if (results.variables) {
-            let retval = results.variables.find(
-                variable => {
-                    return variable.usage === 'returnValue' &&
-                        variable.type === 'number' &&
-                        Number(variable.value) != NaN
+        results.stepResults = []
+        if (!results.errors) {
+            try {
+                let config: AxiosRequestConfig = {
                 }
-            )
-            if (retval !== undefined) {
-                this._logger.debug("Return value %s", retval.value)
-                results.returnValue = Number(retval.value)
+                if (this._testConfig.configData.config) {
+                    config = this.setConfigValues(this._testConfig.configData.config)
+                }
+                if (!config.headers)
+                    config.headers = {
+                        "Content-Type": "application/json"
+                    }
+                config.baseURL = this._testConfig.replaceWithVarVaule(this._testConfig.configData.baseURL)
+                let api: Api = new Api(config);
+                let foundError: boolean = false
+                for (let idx: number = 0; !foundError && idx < this._testConfig.configData.steps.length; idx++) {
+                    let testStep: ITestStep = this._testConfig.configData.steps[idx];
+                    this._logger.debug("Running step %s ", testStep.stepName)
+                    let stepResult = await this.runTestStep(testStep, api, nodata || false)
+                    foundError = !stepResult.success
+                    this._logger.debug("Step success=%s, duration=%d", stepResult.success, stepResult.duration)
+                    results.stepResults.push(stepResult)
+                    if (!stepResult.ignoreDuration)
+                        results.returnValue += stepResult.duration
+                    results.duration += stepResult.duration
+                    results.contentLength += stepResult.contentLength
+                }
+                results.success = !foundError
+            } catch (error) {
+                this._logger.error(error)
+            }
+            if (results.variables) {
+                let retval = results.variables.find(
+                    variable => {
+                        return variable.usage === 'returnValue' &&
+                            variable.type === 'number' &&
+                            Number(variable.value) != NaN
+                    }
+                )
+                if (retval !== undefined) {
+                    this._logger.debug("Return value %s", retval.value)
+                    results.returnValue = Number(retval.value)
+                }
             }
         }
         this._logger.debug("Test success=%s, duration=%d", results.success, results.duration)

@@ -6,26 +6,24 @@
         {
             "key": "format",
             "type": "string",
-            "usage": "",
-            "value": "dash-avc"
+            "usage": "input",
+            "value": "dash-avc",
+            "validation": "value.startsWith('dash')"
         },
+      
         {
-            "key": "svtId",
-            "type": "string",
-            "usage": "",
-            "value": ""
-        },
-        {
-            "key": "videoSvtId",
-            "type": "string",
-            "usage": "",
-            "value": ""
-        },
-        {
-            "key": "legacyId",
+            "key": "videoChunks",
             "type": "number",
-            "usage": "",
-            "value": 0
+            "usage": "input",
+            "value": 10,
+            "validation": "value > 0 && value < 21"
+        },
+        {
+            "key": "representationId",
+            "type": "number",
+            "usage": "input",
+            "value": 1,
+            "validation": "value > 0 && value < 5"
         },
         {
             "key": "programTitle",
@@ -73,9 +71,10 @@
                     ],
                     "transformers": [
                         {
+                            "type":"extract",
                             "source": "{{urlSvtPlay}}",
                             "target": "legacyId, videoName",
-                            "expression": "\\/video\/(\\d+)\/(.+)"
+                            "from": "\\/video\/(\\d+)\/(.+)"
                         }
                     ]
                 },
@@ -135,13 +134,67 @@
                             "type": "jsonpath",
                             "expression": "$.videoReferences[?(@.format =='{{format}}')].resolve",
                             "variable": "resolver"
-                        } 
+                        }
                     ]
                 },
                 {
                     "config": {
                         "url": "{{resolver}}"
-                    }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.location",
+                            "variable": "manifest"
+                        }
+                    ],
+                    "transformers": [
+                        {
+                            "type":"extract",
+                            "source": "{{manifest}}",
+                            "target": "videoHostPath",
+                            "from": "^((?:\/\/|[^\/]+)*(.*))\/"
+                        }
+                    ]
+                },
+                {
+                    "config": {
+                        "url": "{{manifest}}"
+                    },
+                    "extractors": [
+                        {
+                            "type": "xpath",
+                            "expression": "//*[local-name() = 'AdaptationSet'][1][@contentType='video']/*[local-name() = 'Representation'][@id={{representationId}}]/*[local-name() = 'SegmentTemplate']/@media",
+                            "variable": "videoTemplate"
+                        }
+                       
+                    ],
+                    "transformers": [
+                        {
+                            "type":"replace",
+                            "source": "{{videoHostPath}}/{{videoTemplate}}",
+                            "target": "videoChunk",
+                            "from": "$Number$",
+                            "to": "{{$lapIdx1}}"
+
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stepName": "Play Video",
+            "iterator": {
+                "value": "{{videoChunks}}"
+            },
+            "requests": [
+                {
+                    "config": {
+                        "url": "{{videoChunk}}"
+                    },
+                    "extractors": [
+                        
+                    ]
                 }
             ]
         }

@@ -11,7 +11,7 @@
         {
             "key": "metricName",
             "type": "string",
-            "usage": "info",
+            "usage": "inResponse",
             "value": "",
             "unit": ""
         },
@@ -30,13 +30,13 @@
         {
             "key": "duration_in_mins",
             "type": "number",
-            "usage": "",
+            "usage": "input",
             "value": 600
         },
         {
             "key": "applicationName",
             "type": "string",
-            "usage": "",
+            "usage": "inResponse",
             "value": ""
         },
         {

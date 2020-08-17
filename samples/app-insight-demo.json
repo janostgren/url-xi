@@ -5,13 +5,13 @@
         {
             "key": "api_key",
             "type": "string",
-            "usage": "",
+            "usage": "input",
             "value": "'DEMO_KEY'"
         },
         {
             "key": "application",
             "type": "string",
-            "usage": "",
+            "usage": "input",
             "value": "'DEMO_APP'"
         },
         {

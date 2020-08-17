@@ -23,7 +23,7 @@ export const testCaseSchema = {
             },
             "usage": {
               "type": "string",
-              "enum": ["returnValue", "info", "inResponse", ""]
+              "enum": ["returnValue", "info", "inResponse", "input",""]
             },
             "value": {
 
@@ -154,6 +154,10 @@ export const testCaseSchema = {
                         {
                           "type": "object",
                           "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["extract", "replace"]
+                            },
 
                             "source": {
                               "type": "string"
@@ -161,7 +165,10 @@ export const testCaseSchema = {
                             "target": {
                               "type": "string"
                             },
-                            "expression": {
+                            "from": {
+                              "type": "string"
+                            },
+                            "to": {
                               "type": "string"
                             }
 
@@ -169,7 +176,7 @@ export const testCaseSchema = {
                           "required": [
                             "source",
                             "target",
-                            "expression"
+                            "from"
 
                           ]
                         }

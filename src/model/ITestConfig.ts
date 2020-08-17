@@ -11,10 +11,14 @@ export interface IAssertion {
     reportFailOnly?:boolean
 }
 
+export type TransformerType = 'extract' | 'replace' 
+
 export interface ITransformer {
+    type:TransformerType
     source:string
     target:string
-    expression:string
+    from:string
+    to:string 
 } 
 
 export interface IRequestConfig {
@@ -59,13 +63,14 @@ export interface ITestStep {
 }
 
 export type VariableType = 'string' | 'number' | 'array'
-export type VariableUsage = 'returnValue' | 'inResponse' | 'info' | ''
+export type VariableUsage = 'returnValue' | 'inResponse' | 'info' | 'input'| ''
 
 export interface IVariable {
     key: string,
     type: VariableType,
     usage: VariableUsage,
     value: any,
+    validation?:string
     unit?: string
 }
 

@@ -75,9 +75,10 @@ export class TestConfig extends TestBase {
             if (this.configData.variables) {
                 for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
                     let v: IVariable = this.configData.variables[idx]
-                    if (v.value) {
+                    let isNumber:boolean = (v.value !== undefined && (typeof v.value !== 'string' ) && Number(v.value) != NaN) ? true:false
+                    if (!isNumber) {
                         if (helpers.isDotedString(v.value))
-                            v.value = eval(v.value)
+                            v.value = eval(helpers.unDotify(v.value))
                         else if (typeof v.value === 'string')
                             v.value = this.replaceWithVarVaule(v.value)
                     }

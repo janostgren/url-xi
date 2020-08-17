@@ -13,6 +13,7 @@
   "author": "Jan Ostgren",
   "license": "ISC",
   "dependencies": {
+    "@types/color": "^3.0.1",
     "@types/commander": "^2.12.2",
     "@types/express": "^4.17.7",
     "@types/faker": "^4.1.12",
@@ -21,6 +22,8 @@
     "@types/xmldom": "^0.1.30",
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
+    "color": "^3.1.2",
+    "colors": "^1.4.0",
     "commander": "^5.1.0",
     "express": "^4.17.1",
     "faker": "^4.1.0",

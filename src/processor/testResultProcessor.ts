@@ -12,6 +12,8 @@ import path from 'path'
 import util from 'util';
 import * as helper from '../lib/helpers'
 
+import colors from 'colors'
+
 
 export class TestResultProcessor extends TestBase {
    
@@ -59,16 +61,18 @@ export class TestResultProcessor extends TestBase {
     }
 
     public viewResults(results:ITestResults) {
-        console.log("\n----- Process results [%s] -----\n",results.testName)
-        if (results.variables) {
-            console.log("----- Variables values -----")
+        //console.log("\n----- Process results [%s] -----\n",results.testName)
+    
+        console.log(colors.blue.bold("\n----- Process results [%s] -----\n"));
+        if (results?.variables?.length) {
+            console.log(colors.cyan("----- Variables values -----"))
             for (let idx: number = 0; idx <results.variables.length; idx++) {
                 let variable: IVariable =results.variables[idx]
                 console.log("\tname=%s , value=%s , usage=%s", variable.key, variable.value, variable.usage || "internal")
             }
             console.log("")
         }
-        console.log("----- Steps result -----")
+        console.log(colors.yellow("----- Steps result -----"))
         for (let idx: number = 0; idx <results.stepResults.length; idx++) {
             let stepResult: IStepResult =results.stepResults[idx]
             console.log("\tStep Name [%s] : success=%s, duration=%d, content-length=%d, start time=%s, ignore duration=%s", stepResult.stepName, stepResult.success, stepResult.duration,stepResult.contentLength,new Date(stepResult.startTime).toISOString(), stepResult.ignoreDuration)
@@ -80,12 +84,12 @@ export class TestResultProcessor extends TestBase {
             }
             )
         }
-        console.log("-----[Test Summary] -----")
-        console.log("Total Response Time: %d",results.duration)
-        console.log("Start Time: %s",new Date(results.startTime).toISOString())
-        console.log("Number of steps: %d",results?.stepResults?.length || 0)
-        console.log("Total Content length: %d",results.contentLength)
-        console.log("Return value: %d",results.returnValue)
-        console.log("Result success: %s",results.success)
+        console.log(colors.green.bold("-----[Test Summary] -----"))
+        console.log("\tTotal Response Time: %d",results.duration)
+        console.log("\tStart Time: %s",new Date(results.startTime).toISOString())
+        console.log("\tNumber of steps: %d",results?.stepResults?.length || 0)
+        console.log("\tTotal Content length: %d",results.contentLength)
+        console.log("\tReturn value: %d",results.returnValue)
+        console.log("\tResult success: %s",results.success)
     }
 }
