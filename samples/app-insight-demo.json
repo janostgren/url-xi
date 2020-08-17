@@ -6,19 +6,19 @@
             "key": "api_key",
             "type": "string",
             "usage": "input",
-            "value": "'DEMO_KEY'"
+            "value": "DEMO_KEY"
         },
         {
             "key": "application",
             "type": "string",
             "usage": "input",
-            "value": "'DEMO_APP'"
+            "value": "DEMO_APP"
         },
         {
             "key": "aggregation",
             "type": "string",
             "usage": "",
-            "value": "let arr=['max','min','avg'];arr[Math.floor(Math.random() * arr.length)]"
+            "value": "'let arr=['max','min','avg'];arr[Math.floor(Math.random() * arr.length)]'"
         },
         {
             "key": "pageViewName",

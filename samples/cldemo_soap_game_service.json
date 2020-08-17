@@ -4,15 +4,10 @@
         {
             "key": "gameId",
             "type": "number",
-            "usage": "",
+            "usage": "inResponse",
             "value": "'let arr=[1,3,5,8];arr[Math.floor(Math.random() * arr.length)]'"
         },
-        {
-            "key": "gameId2",
-            "type": "number",
-            "usage": "",
-            "value": 0
-        },
+      
         {
             "key": "randomTeamId",
             "type": "number",
@@ -23,7 +18,8 @@
             "key": "remainingTickets",
             "type": "number",
             "usage": "returnValue",
-            "value": -1
+            "value": -1,
+            "unit": "tickets"
         }
     ],
     "baseURL": "http://cldemo.apicasystem.com:8001",

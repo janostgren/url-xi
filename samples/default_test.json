@@ -5,7 +5,7 @@
             "key": "eventId",
             "type": "number",
             "usage": "",
-            "value": "let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]"
+            "value": "'let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]'"
         },
         {
             "key": "sections",
@@ -23,7 +23,7 @@
         {
             "key": "venueName",
             "type": "string",
-            "usage": "info",
+            "usage": "inResponse",
             "value": ""
         },
         {

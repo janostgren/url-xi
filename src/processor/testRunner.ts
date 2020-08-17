@@ -238,7 +238,7 @@ export class TestRunner extends TestBase {
     private async runTestStep(step: ITestStep, api: Api, nodata: boolean) {
         let stepResult: IStepResult = JSON.parse("{}")
         stepResult.stepName = step.stepName
-        stepResult.success = true
+        stepResult.success = false
         stepResult.duration = 0
         stepResult.contentLength = 0
         stepResult.startTime = Date.now()
@@ -300,7 +300,7 @@ export class TestRunner extends TestBase {
                         if (!error.response) {
                             let status: number = error.errno || -1
                             let statusText = error.message
-                            this._logger.fatal(error)
+                            this._logger.fatal("%s %s", error.message, error.isAxiosError)
                             if (error.isAxiosError)
                                 axError = error
                             response = JSON.parse("{}")
@@ -341,18 +341,20 @@ export class TestRunner extends TestBase {
                     requestResult.status = response.status
                     requestResult.statusText = response?.statusText
                     requestResult.headers = response.headers
-                    let cl = response.headers["content-length"]
-                    if (cl !== undefined)
-                        requestResult.contentLength = Number(cl)
-                    else if (response.data) {
-                        if (typeof response.data === 'string')
-                            requestResult.contentLength = response.data.length
-                        else {
-                            requestResult.contentLength = JSON.stringify(response.data)?.length || 0
+                    requestResult.success = !foundError
+                    stepResult.success = !foundError
+                    if (!foundError) {
+                        let cl = response.headers["content-length"]
+                        if (cl !== undefined)
+                            requestResult.contentLength = Number(cl)
+                        else if (response.data) {
+                            if (typeof response.data === 'string')
+                                requestResult.contentLength = response.data.length
+                            else {
+                                requestResult.contentLength = JSON.stringify(response.data)?.length || 0
+                            }
                         }
                     }
-
-
                     this._testConfig.setVariableValue("$contentLength", requestResult.contentLength)
                     let bigContent: boolean = requestResult.contentLength > resultConfig.contentLength.maxRequestLength
                     if (bigContent)
@@ -362,7 +364,7 @@ export class TestRunner extends TestBase {
                         requestResult.data = response?.data
                     requestResult.duration = Date.now() - start
                     requestResult.error = axError
-                    requestResult.success = !foundError
+
                     stepResult.requestResults.push(requestResult)
                     stepResult.duration += requestResult.duration
                     stepResult.contentLength += requestResult.contentLength
@@ -396,10 +398,14 @@ export class TestRunner extends TestBase {
                     case 'inResponse':
                     case 'returnValue':
                     case 'input':
+                        let value =  process.env["url_xi_"+variable.key] || variable.value
+                        if(variable.type ==='number' && value !== undefined)
+                            value=Number(value)
+                        variable.value=value
+
                         results.variables?.push(variable)
                         if (variable.validation !== undefined) {
                             try {
-                                let value = variable.value
                                 let ok: boolean = eval(variable.validation) ? true : false
                                 if (!ok) {
                                     let message: string = `Validation of input parameter ${variable.key} failed. Value=${value}`

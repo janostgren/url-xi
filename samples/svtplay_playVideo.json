@@ -16,7 +16,8 @@
             "type": "number",
             "usage": "input",
             "value": 10,
-            "validation": "value > 0 && value < 21"
+            "validation": "value > 0 && value < 21",
+            "unit": "chunks"
         },
         {
             "key": "representationId",
@@ -65,7 +66,7 @@
                     "extractors": [
                         {
                             "type": "jsonpath",
-                            "expression": "$.data.genres[0].selectionsForWeb[0].items[0].item.urls.svtplay",
+                            "expression": "$.data.genres[0].selectionsForWeb[0].items[*].item.urls.svtplay",
                             "variable": "urlSvtPlay"
                         }
                     ],
@@ -136,7 +137,13 @@
                             "variable": "resolver"
                         }
                     ]
-                },
+                }
+               
+            ]
+        },
+        {
+            "stepName": "Get Manifest",
+            "requests": [
                 {
                     "config": {
                         "url": "{{resolver}}"
