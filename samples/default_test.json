@@ -8,6 +8,20 @@
             "value": "'let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]'"
         },
         {
+            "key": "defIdleTime",
+            "type": "number",
+            "usage": "input",
+            "value": 2000,
+            "validation": "value > 999 && value <= 15000"
+        },
+        {
+            "key": "requestIdleTime",
+            "type": "number",
+            "usage": "input",
+            "value": 1000,
+            "validation": "value > 999 && value <= 15000"
+        },
+        {
             "key": "sections",
             "type": "number",
             "usage": "inResponse",
@@ -35,9 +49,11 @@
     ],
     "baseURL": "http://ticketmonster.apicasystem.com",
     "config": {},
+    "idleBetweenRequests": "{{defIdleTime}}",
     "steps": [
         {
             "stepName": "Get Events",
+            "idleBetweenRequests": "{{requestIdleTime}}",
             "requests": [
                 {
                     "config": {

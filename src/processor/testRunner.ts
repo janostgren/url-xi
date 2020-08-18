@@ -1,4 +1,4 @@
-import { ITestStep, IExtractor, IRequest, IRequestConfig, IStepIterator, IAssertion, ITransformer } from '../model/ITestConfig'
+import { ResultConfig, ITestStep, IExtractor, IRequest, IRequestConfig, IStepIterator, IAssertion, ITransformer } from '../model/ITestConfig'
 import { IRequestResult, IStepResult, ITestResults, IAssertionResult } from '../model/ITestResult'
 import { TestConfig } from '../config/testConfig'
 import Axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
@@ -15,12 +15,7 @@ import { TestResultProcessor } from './testResultProcessor';
 import { Logger } from 'log4js'
 import { apiConfig } from '../lib/api.config'
 
-const resultConfig = {
-    contentLength: {
-        maxRequestLength: 64 * 1024,
-        maxTotalLength: 256 * 1024
-    }
-}
+
 export class TestRunner extends TestBase {
 
     private _testConfig: TestConfig
@@ -235,7 +230,7 @@ export class TestRunner extends TestBase {
         })
     }
 
-    private async runTestStep(step: ITestStep, api: Api, nodata: boolean) {
+    private async runTestStep(step: ITestStep, api: Api, nodata: boolean, idleBetweenRequest: number) {
         let stepResult: IStepResult = JSON.parse("{}")
         stepResult.stepName = step.stepName
         stepResult.success = false
@@ -244,6 +239,16 @@ export class TestRunner extends TestBase {
         stepResult.startTime = Date.now()
         stepResult.ignoreDuration = step?.ignoreDuration || false
         stepResult.requestResults = []
+        if (step.idleBetweenRequests) {
+            let idleTime = step.idleBetweenRequests
+            if (isNaN(idleTime))
+                idleTime = this._testConfig.replaceWithVarVaule(step.idleBetweenRequests)
+
+            if (!isNaN(idleTime)) {
+                idleBetweenRequest = idleTime
+                this._logger.debug("Idle between request in step =%d", idleBetweenRequest)
+            }
+        }
         this._testConfig.setVariableValue("$stepName", step.stepName)
         try {
             let foundError: boolean = false
@@ -267,6 +272,7 @@ export class TestRunner extends TestBase {
                     this._testConfig.setVariableValue(varName, val)
                 }
                 for (let idx: number = 0; !foundError && idx < step?.requests.length || 0; idx++) {
+                    let requestIdleBetweenRequests = idleBetweenRequest
                     let request: IRequest = step.requests[idx]
                     let config: IRequestConfig = request.config
                     let requestResult: IRequestResult = JSON.parse("{}")
@@ -310,7 +316,15 @@ export class TestRunner extends TestBase {
                         else {
                             response = error.response
                         }
-                        foundError = (!request.expectedStatus && request.expectedStatus != response.status)
+                        let statusOK: boolean = true
+                        if (request.expectedStatus) {
+                            statusOK = request.expectedStatus.find(status => {
+                                return status === response.status
+                            }
+
+                            ) != undefined
+                        }
+                        foundError = (!statusOK)
                     };
                     if (response.status) {
                         if (request.extractors) {
@@ -356,10 +370,10 @@ export class TestRunner extends TestBase {
                         }
                     }
                     this._testConfig.setVariableValue("$contentLength", requestResult.contentLength)
-                    let bigContent: boolean = requestResult.contentLength > resultConfig.contentLength.maxRequestLength
+                    let bigContent: boolean = requestResult.contentLength > ResultConfig.contentLength.maxRequestLength
                     if (bigContent)
                         this._logger.debug("Content length [%d] is greater than max length to save [%d]. Result not saved ",
-                            requestResult.contentLength, resultConfig.contentLength.maxRequestLength)
+                            requestResult.contentLength, ResultConfig.contentLength.maxRequestLength)
                     if (!bigContent && !nodata && !request.notSaveData)
                         requestResult.data = response?.data
                     requestResult.duration = Date.now() - start
@@ -371,6 +385,10 @@ export class TestRunner extends TestBase {
                     this._logger.debug("Request success=%s, status=%d statusText=%s", !foundError, requestResult.status, requestResult.statusText)
                     if (foundError)
                         stepResult.success = false
+                    else if (requestIdleBetweenRequests) {
+                        this._logger.debug("Start idle %d ms between requests", requestIdleBetweenRequests)
+                        await helper.sleep(requestIdleBetweenRequests)
+                    }
                 }
             }
         }
@@ -380,7 +398,7 @@ export class TestRunner extends TestBase {
         return stepResult
     }
 
-    public async run(nodata?: boolean) {
+    public async run(nodata?: boolean, inputs?: string) {
         let results: ITestResults = JSON.parse("{}")
         results.testName = this._testConfig.configData.testName
         this._testConfig.setVariableValue("$testName", results.testName)
@@ -391,6 +409,19 @@ export class TestRunner extends TestBase {
         results.contentLength = 0
         results.startTime = Date.now()
         results.variables = []
+        let idleBetweenRequest: number = 0
+        let inpMap = new Map()
+        if (inputs) {
+            let arr = inputs.split(',').map(item => item.trim());
+            arr.forEach(item => {
+                let arr2 = item.split('=').map(item => item.trim());
+                for (let idx = 0; idx < arr2.length - 1; idx += 2) {
+                    inpMap.set(arr2[idx], arr2[idx + 1])
+                }
+            }
+            )
+        }
+
         if (this._testConfig.configData?.variables) {
             let errors: any = []
             this._testConfig.configData.variables.forEach(variable => {
@@ -398,11 +429,10 @@ export class TestRunner extends TestBase {
                     case 'inResponse':
                     case 'returnValue':
                     case 'input':
-                        let value =  process.env["url_xi_"+variable.key] || variable.value
-                        if(variable.type ==='number' && value !== undefined)
-                            value=Number(value)
-                        variable.value=value
-
+                        let value = inpMap.get(variable.key) || process.env["url_xi_" + variable.key] || variable.value
+                        if (variable.type === 'number' && value !== undefined && !isNaN(value))
+                            value = Number(value)
+                        variable.value = value
                         results.variables?.push(variable)
                         if (variable.validation !== undefined) {
                             try {
@@ -425,8 +455,19 @@ export class TestRunner extends TestBase {
             if (errors.length)
                 results.errors = errors
         }
+
         results.stepResults = []
         if (!results.errors) {
+            if (this._testConfig.configData.idleBetweenRequests) {
+                let idleTime = this._testConfig.configData.idleBetweenRequests
+                if (isNaN(idleTime))
+                    idleTime = this._testConfig.replaceWithVarVaule(this._testConfig.configData.idleBetweenRequests)
+
+                if (!isNaN(idleTime)) {
+                    idleBetweenRequest = idleTime
+                    this._logger.debug("Idle between request=%d", idleBetweenRequest)
+                }
+            }
             try {
                 let config: AxiosRequestConfig = {
                 }
@@ -443,7 +484,7 @@ export class TestRunner extends TestBase {
                 for (let idx: number = 0; !foundError && idx < this._testConfig.configData.steps.length; idx++) {
                     let testStep: ITestStep = this._testConfig.configData.steps[idx];
                     this._logger.debug("Running step %s ", testStep.stepName)
-                    let stepResult = await this.runTestStep(testStep, api, nodata || false)
+                    let stepResult = await this.runTestStep(testStep, api, nodata || false, idleBetweenRequest)
                     foundError = !stepResult.success
                     this._logger.debug("Step success=%s, duration=%d", stepResult.success, stepResult.duration)
                     results.stepResults.push(stepResult)
@@ -461,12 +502,12 @@ export class TestRunner extends TestBase {
                     variable => {
                         return variable.usage === 'returnValue' &&
                             variable.type === 'number' &&
-                            Number(variable.value) != NaN
+                            !isNaN(variable.value)
                     }
                 )
                 if (retval !== undefined) {
                     this._logger.debug("Return value %s", retval.value)
-                    results.returnValue = Number(retval.value)
+                    results.returnValue = !isNaN(retval.value) ? Number(retval.value) : 0
                 }
             }
         }

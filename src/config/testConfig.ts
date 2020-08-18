@@ -1,9 +1,9 @@
 import fs from 'fs';
 
 import util from 'util';
-import { AxiosResponse, Method } from 'axios'
+import { AxiosRequestConfig, AxiosResponse, Method } from 'axios'
 import { TestBase } from '../lib/testbase'
-import { IExtractor, IRequestConfig, ITestStep, ITestConfigData, IVariable } from '../model/ITestConfig'
+import { ResultConfig, IExtractor, IRequestConfig, ITestStep, ITestConfigData, IVariable } from '../model/ITestConfig'
 import * as schemaValidator from '../processor/schemaValidator'
 import * as helpers from '../lib/helpers'
 import * as faker from 'faker'
@@ -58,11 +58,21 @@ export class TestConfig extends TestBase {
                 this._errors = schemaValidator.getErrors()
                 return schemaOK
             }
+            let packInfo = helpers.getPackageInfo();
+            let defaultUserAgent: string = `url-xi-${packInfo.version}`
+            let defConfig: AxiosRequestConfig = { "timeout": ResultConfig.timeout, headers: { "User-Agent": defaultUserAgent } }
             if (!base_url)
                 base_url = this._base_url
 
             if (!this.configData?.config)
                 this.configData.config = JSON.parse("{}")
+            if (this.configData.config?.headers)
+                this.configData.config.headers = Object.assign(this.configData.config.headers, defConfig.headers)
+            else if (this.configData.config)
+                this.configData.config.headers = defConfig.headers
+            this.configData.config = Object.assign(defConfig, this.configData.config)
+           
+
             if (base_url)
                 this.configData.baseURL = base_url
             if (this.configData.config?.headers)
@@ -70,12 +80,13 @@ export class TestConfig extends TestBase {
             else if (this.configData.config)
                 this.configData.config.headers = this._headers
 
-            this._logger.trace("config:", this.configData.config)
+            this._logger.debug("config:", this.configData.config)
 
             if (this.configData.variables) {
                 for (let idx: number = 0; idx < this.configData.variables.length; idx++) {
                     let v: IVariable = this.configData.variables[idx]
-                    let isNumber:boolean = (v.value !== undefined && (typeof v.value !== 'string' ) && Number(v.value) != NaN) ? true:false
+                    //let isNumber: boolean = (v.value !== undefined && (typeof v.value !== 'string') && Number(v.value) != NaN) ? true : false
+                    let isNumber: boolean = (v.value !== undefined) && !isNaN(v.value)
                     if (!isNumber) {
                         if (helpers.isDotedString(v.value))
                             v.value = eval(helpers.unDotify(v.value))
@@ -102,7 +113,7 @@ export class TestConfig extends TestBase {
         if (v) {
             v.value = value
         } else {
-            let variable: IVariable = { "key": key, "usage": "", "type": Number(value) !== NaN ? "number" : "string", "value": value }
+            let variable: IVariable = { "key": key, "usage": "", "type": !isNaN(value)  ? "number" : "string", "value": value }
             this._varMap.set(key, variable)
         }
     }

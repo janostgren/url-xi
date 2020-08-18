@@ -37,6 +37,18 @@
             "type": "string",
             "usage": "inResponse",
             "value": ""
+        },
+        {
+            "key": "codecs",
+            "type": "string",
+            "usage": "inResponse",
+            "value": ""
+        },
+        {
+            "key": "bandwidth",
+            "type": "number",
+            "usage": "inResponse",
+            "value": ""
         }
     ],
     "steps": [
@@ -173,6 +185,16 @@
                             "type": "xpath",
                             "expression": "//*[local-name() = 'AdaptationSet'][1][@contentType='video']/*[local-name() = 'Representation'][@id={{representationId}}]/*[local-name() = 'SegmentTemplate']/@media",
                             "variable": "videoTemplate"
+                        },
+                        {
+                            "type": "xpath",
+                            "expression": "//*[local-name() = 'AdaptationSet'][1][@contentType='video']/*[local-name() = 'Representation'][@id={{representationId}}]/@bandwidth",
+                            "variable": "bandwidth"
+                        },
+                        {
+                            "type": "xpath",
+                            "expression": "//*[local-name() = 'AdaptationSet'][1][@contentType='video']/*[local-name() = 'Representation'][@id={{representationId}}]/@codecs",
+                            "variable": "codecs"
                         }
                        
                     ],

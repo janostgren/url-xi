@@ -23,7 +23,7 @@ export const testCaseSchema = {
             },
             "usage": {
               "type": "string",
-              "enum": ["returnValue", "info", "inResponse", "input",""]
+              "enum": ["returnValue", "info", "inResponse", "input", ""]
             },
             "value": {
 
@@ -75,9 +75,15 @@ export const testCaseSchema = {
                         }
                       },
                       "required": [
-
                         "url"
                       ]
+                    },
+                    "expectedStatus": {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
                     },
                     "extractors": {
                       "type": "array",
@@ -193,7 +199,6 @@ export const testCaseSchema = {
           },
           "required": [
             "stepName",
-
             "requests"
           ]
         }

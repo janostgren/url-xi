@@ -1,6 +1,10 @@
 import fs from 'fs';
 import util from 'util';
 
+export async function sleep(ms:number) {
+    await new Promise(resolve => setTimeout(resolve,ms))
+}
+
 
 export function toJson (str:any) {
     try {

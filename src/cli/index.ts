@@ -48,6 +48,7 @@ var test_file: string, result_dir: string, headers: any, debug: boolean
 var parse_only: boolean, resultName: string
 var nodata:boolean
 var base_url: string
+var inputs:string
 var server: string, port: number
 var testfile_path: any
 var pack:any=helpers.getPackageInfo()
@@ -61,6 +62,7 @@ program
     .option('-f, --file <file>', 'test config file')
     .option('-r, --results <dir>', 'results dir')
     .option('-xh, --xheaders <headers>', 'extra headers', '{}')
+    .option('-i, --inputs <inputs>', 'input variables. Comma separated list of value pairs var=value format', '')
     .option('-u, --url <url>', 'base url')
     .option('-d, --debug', 'output extra debugging')
     .option('-nd, --nodata', 'no response data in report')
@@ -78,6 +80,7 @@ result_dir = program.results;
 headers = JSON.parse(program.xheaders)
 base_url = program.url
 debug = program.debug
+inputs = program.inputs
 parse_only = program.parse_only
 nodata =program.nodata
 resultName = program.result_name
@@ -153,7 +156,7 @@ async function run_cli() {
         }
         if (exitCode === 0 && !parse_only) {
             let testRunner: TestRunner = new TestRunner(testConfig, debug);
-            let results: ITestResults = await testRunner.run(nodata);
+            let results: ITestResults = await testRunner.run(nodata,inputs);
             exitCode = results.stepResults ? 0 : 1
             resultProcessor.viewResults(results);
             if (result_dir) {

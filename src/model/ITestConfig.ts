@@ -33,7 +33,7 @@ export interface IRequestConfig {
 export interface IRequest {
     config:IRequestConfig
     extractors?: IExtractor[]
-    expectedStatus?:number
+    expectedStatus?:number[]
     assertions?:IAssertion[]
     transformers?:ITransformer[]
     notSaveData?:boolean
@@ -53,10 +53,16 @@ export interface IExtractor {
 export interface IStepIterator {
     varName:string
     value:any 
-} 
-export interface ITestStep {
-    stepName: string
+}
+
+interface IBaseConfigItem {
+    idleBetweenRequests?:any
     description?:string
+}
+
+export interface ITestStep extends IBaseConfigItem{
+    stepName: string
+   
     ignoreDuration?:boolean
     requests: IRequest[]
     iterator?:IStepIterator
@@ -74,13 +80,21 @@ export interface IVariable {
     unit?: string
 }
 
-export interface ITestConfigData {
+export interface ITestConfigData extends IBaseConfigItem{
     testName: string
-    description?:string
     variables?: IVariable[]
     baseURL: string
     config?: IRequestConfig
     steps: ITestStep[]
+}
+
+export const ResultConfig = {
+    contentLength: {
+        maxRequestLength: 64 * 1024,
+        maxTotalLength: 256 * 1024
+    },
+    timeout:15*1000
+
 }
 
 
