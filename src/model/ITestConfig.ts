@@ -53,6 +53,7 @@ export interface IExtractor {
 export interface IStepIterator {
     varName:string
     value:any 
+    waitForValidResponse?:boolean
 }
 
 interface IBaseConfigItem {
@@ -62,7 +63,6 @@ interface IBaseConfigItem {
 
 export interface ITestStep extends IBaseConfigItem{
     stepName: string
-   
     ignoreDuration?:boolean
     requests: IRequest[]
     iterator?:IStepIterator

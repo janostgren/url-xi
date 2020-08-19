@@ -87,7 +87,6 @@
                 }
             ]
         },
-       
         {
             "stepName": "Get Shows",
             "requests": [
@@ -128,7 +127,6 @@
                         }
                     },
                     "extractors": [
-                       
                         {
                             "type": "jsonpath",
                             "expression": "$.performances[*].id",

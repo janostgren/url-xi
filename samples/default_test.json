@@ -39,12 +39,6 @@
             "type": "string",
             "usage": "inResponse",
             "value": ""
-        },
-        {
-            "key": "xPoweredBy",
-            "type": "string",
-            "usage": "info",
-            "value": ""
         }
     ],
     "baseURL": "http://ticketmonster.apicasystem.com",

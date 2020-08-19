@@ -111,6 +111,7 @@ export class TestRunner extends TestBase {
                     ok = (value == result.expression)
                     break;
             }
+            this._logger.debug("assertion success=%s fail step= %s, value= [%s] expression= [%s], desc= %s", result.success, result.failStep, result.value, result.expression, result.description)
             result.success = ok
 
             result.failStep = (assertion?.failStep || false) && !ok
@@ -252,7 +253,7 @@ export class TestRunner extends TestBase {
         this._testConfig.setVariableValue("$stepName", step.stepName)
         try {
             let foundError: boolean = false
-            let iterator: IStepIterator = { "varName": "", "value": 1 }
+            let iterator: IStepIterator = { "varName": "", "value": 1, "waitForValidResponse": false }
             let laps: number = 1
             if (step.iterator) {
                 iterator = step.iterator
@@ -265,12 +266,16 @@ export class TestRunner extends TestBase {
                 laps = iterator.value || 1
             let varName: string = iterator.varName
             for (let lap: number = 0; !foundError && lap < laps; lap++) {
+
                 this._testConfig.setVariableValue("$lap", lap)
                 this._testConfig.setVariableValue("$lapIdx1", lap + 1)
                 if (varName) {
                     let val = iterator.value?.length ? iterator.value[lap] : Number(lap + 1)
                     this._testConfig.setVariableValue(varName, val)
                 }
+                let poll: boolean = (iterator.waitForValidResponse && lap < laps - 1) ? true : false
+
+
                 for (let idx: number = 0; !foundError && idx < step?.requests.length || 0; idx++) {
                     let requestIdleBetweenRequests = idleBetweenRequest
                     let request: IRequest = step.requests[idx]
@@ -297,7 +302,7 @@ export class TestRunner extends TestBase {
                     let start: number = Date.now()
                     requestResult.startTime = start
                     requestResult.contentLength = 0
-                    this._logger.debug("executing request: %s:%s", stepConfig?.method || 'get', stepConfig?.url)
+                    this._logger.info("Step [%s]. Executing request: %s:%s polling=%s", step.stepName,stepConfig?.method || 'get', stepConfig?.url, poll)
                     let axError: AxiosError = JSON.parse("{}")
                     try {
                         response = await api.request(stepConfig)
@@ -316,16 +321,20 @@ export class TestRunner extends TestBase {
                         else {
                             response = error.response
                         }
-                        let statusOK: boolean = true
-                        if (request.expectedStatus) {
-                            statusOK = request.expectedStatus.find(status => {
-                                return status === response.status
-                            }
 
-                            ) != undefined
-                        }
-                        foundError = (!statusOK)
                     };
+                    if (request.expectedStatus) {
+
+                        let statusOK: boolean = true
+                        statusOK = request.expectedStatus.find(status => {
+                            return status === response.status
+                        }
+
+                        ) != undefined
+                        foundError = (!statusOK)
+                    } else {
+                        foundError = (response.status < 200 || response.status > 299)
+                    }
                     if (response.status) {
                         if (request.extractors) {
                             this.extractValues(request.extractors, response)
@@ -338,15 +347,21 @@ export class TestRunner extends TestBase {
                             if (assres.length) {
                                 if (!stepResult.assertions)
                                     stepResult.assertions = []
-                                //stepResult.assertions = stepResult.assertions?.concat(stepResult.assertions, assres)
-                                assres.forEach(assertion => {
-                                    stepResult.assertions?.push(assertion)
-                                })
                                 let failStep = assres.find(res => {
                                     return (res.failStep && !res.success)
+                                })
+                                /** Stop polling when result found */
+                                if(poll  && !failStep) {
+                                    poll= false;
+                                    lap= laps
+
                                 }
-                                )
-                                foundError = (failStep !== undefined)
+                                assres.forEach(assertion => {
+                                    if (!poll)
+                                        stepResult.assertions?.push(assertion)
+                                })
+
+                                foundError = !poll && (failStep !== undefined)
                             }
                         }
                     }
@@ -378,8 +393,8 @@ export class TestRunner extends TestBase {
                         requestResult.data = response?.data
                     requestResult.duration = Date.now() - start
                     requestResult.error = axError
-
-                    stepResult.requestResults.push(requestResult)
+                    if (!poll )
+                        stepResult.requestResults.push(requestResult)
                     stepResult.duration += requestResult.duration
                     stepResult.contentLength += requestResult.contentLength
                     this._logger.debug("Request success=%s, status=%d statusText=%s", !foundError, requestResult.status, requestResult.statusText)
@@ -389,12 +404,14 @@ export class TestRunner extends TestBase {
                         this._logger.debug("Start idle %d ms between requests", requestIdleBetweenRequests)
                         await helper.sleep(requestIdleBetweenRequests)
                     }
+                    requestResult.endTime =Date.now()
                 }
             }
         }
         catch (error) {
             this._logger.error(error)
         }
+        stepResult.endTime =Date.now()
         return stepResult
     }
 
@@ -416,7 +433,7 @@ export class TestRunner extends TestBase {
             arr.forEach(item => {
                 let arr2 = item.split('=').map(item => item.trim());
                 for (let idx = 0; idx < arr2.length - 1; idx += 2) {
-                    inpMap.set(arr2[idx], arr2[idx + 1])
+                    inpMap.set(arr2[idx], helper.unDotify(arr2[idx + 1]))
                 }
             }
             )
@@ -511,7 +528,8 @@ export class TestRunner extends TestBase {
                 }
             }
         }
-        this._logger.debug("Test success=%s, duration=%d", results.success, results.duration)
+        results.endTime =Date.now()
+        this._logger.debug("Test success=%s, duration=%d real time=%d ", results.success, results.duration,results.endTime- results.startTime)
         return results
     }
 }

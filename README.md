@@ -55,19 +55,62 @@ Variables are used for storing values of extractors or as input parameters.
 ``` json
  "variables": [
         {
-            "key": "eventId","type":"number","usage":"","value":"let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]"
+            "key": "eventId",
+            "type": "number",
+            "usage": "",
+            "value": "'let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]'"
         },
         {
-            "key": "sections","type":"number","usage":"inResponse","value":0
+            "key": "requestIdleTime",
+            "type": "number",
+            "usage": "input",
+            "value": 1000,
+            "validation": "value > 999 && value <= 15000"
         },
         {
-            "key": "capacity","type":"number","usage":"returnValue","value":0,"unit":"seats"
+            "key": "capacity",
+            "type": "number",
+            "usage": "returnValue",
+            "value": 0,
+            "unit": "seats"
         },
         {
-            "key": "venueName","type":"string","usage":"info","value":""
+            "key": "venueName",
+            "type": "string",
+            "usage": "inResponse",
+            "value": ""
         }
     ]
+``` 
+- The usage property is important for variables.
+- - input: is input variables which can be changed with -i flag in the cli interface. You should have validation of them
+- - returnValue: Will be the return value of the test run
+- - inResponse: Is additional information in stored in the test result. 
+- You can set an initial value with JavaScript. It requires double dots to work. See above
+- Validation is also done with JavaScript, but does not require double dots. 
+### Dynamic variables
+Variables which are not defined int variables sections are called dynamic variables. They are created by extractors and have keys not defined in the variables section.
+### Variable placeholders
+All variables can be defined with the mustache syntax. A placeholder looks like this {{variableName}}
+### System variables
+- $timestamp - Current timestamp (ms) epoch format 
+- $testName - Name of current test
+- $stepName - Name of current step
+- $lap - The lap number when an iterator is used. Starts with 0 
+- $lapIdx1 - The lap number when an iterator is used. Starts with 1 
+## Random data generation
+Random data generation with the NPM module faker is supported. Can be used as variables or be dynamically generated with mustache syntax for placeholders. 
+``` json
+{
+            "key": "email",
+            "type": "string",
+            "usage": "inResponse",
+            "value": "{{$faker.internet.email}}"
+        }
 ```
+See: https://www.npmjs.com/package/faker for all placeholders
+
+
 ## Iterator
 You can use an iterator to iterate a step in several laps. An iterator can be based on a number or an array. Variable substitution is supported for the value of the iterator. The variable must be of type array and extraction must have the array flag.
 
@@ -148,6 +191,20 @@ You can use an iterator to iterate a step in several laps. An iterator can be ba
             ]
         }
 ```
+### Step example 3 - Iterator which polls for valid data
+``` json
+  {
+      "stepName": "Poll for new result",
+      "idleBetweenRequests": "{{requestIdleTime}}",
+      "iterator": {
+            "value": "{{pollCount}}",
+            "waitForValidResponse": true
+      }
+  }
+```
+- Iterator count is in value property
+- WaitForValidResponse will do polling of requests in step until an assertion with failStep set is returning success
+- You also see a new feature here it is **idleBetweenRequests**. It can be used on test and step level
 ## Request data as a string 
 Data in request as JSON is supported by default. If data is string format you must use an array for complex requests. Here comes a SOAP example with xml data.
 ``` json
@@ -186,6 +243,24 @@ Data in request as JSON is supported by default. If data is string format you mu
             ]
         }
 ```
+## Status code validation for request response. 
+- Default is that a response status between 200 and 299 is interpreted as a successful request
+- You can override that with the expectedStatus array defined in the request section.
+
+``` json 
+{
+    "expectedStatus": [401],
+    "config": {
+      "method": "get",
+      "url": "/basic-auth/foo/error",
+      "auth": {
+        "username": "foo",
+        "password": "bar"
+      }
+   }          
+}
+
+```
 ## Supported syntax for requests
 Url-xi is based on the Axios framework. It means that the axios syntax for request configuration can be used.
 See: https://www.npmjs.com/package/axios
@@ -218,7 +293,7 @@ A test case is validated with by follow JSON schema
               },
               "usage": {
                 "type": "string",
-                "enum": ["returnValue", "info", "inResponse",""]
+                "enum": ["returnValue", "info", "inResponse","input",""]
               },
               "value": {
                 
@@ -228,7 +303,6 @@ A test case is validated with by follow JSON schema
               "key",
               "type",
               "usage"
-              
             ]
           }
         ]
@@ -382,16 +456,43 @@ Options:
   -f, --file <file>                 test config file
   -r, --results <dir>               results dir
   -xh, --xheaders <headers>         extra headers (default: "{}")
+  -i, --inputs <inputs>             input variables. Comma separated list of value pairs var=value format (default: "")
   -u, --url <url>                   base url
   -d, --debug                       output extra debugging
-  -nd, --nodata                     No response data in in report
+  -nd, --nodata                     no response data in report
   -po, --parse_only                 parse json only. No not run
   -rn, --result_name <result_name>  name of the result
   -s, --server                      start as server
-  -p, --port <port>                 server port (default: "8066")
+  -p, --port <port>                 server port (default: "8070")
   -h, --help                        display help for command
 
 ```
+### Syntax for inputs
+```
+url-xi -f samples/default_test.json -i "defIdleTime=1000, requestIdleTime=1000"
+```
+### CLI Console Report
+```
+----- Process results [Ticketmonster Home Page] -----
+
+----- [Test Summary] -----
+        Total Response Time: 364
+        Start Time: 2020-08-19T11:46:39.928Z
+        End Time: 2020-08-19T11:46:40.294Z
+        Number of steps: 1
+        Total Content length: 493
+        Return value: 364
+        Result success: true
+
+----- [Steps result] -----
+
+        Home page
+          [success=true, duration=364, content-length=493, start time=2020-08-19T11:46:39.930Z, ignore duration=false]
+                [GET] /ticket-monster 
+                  [success=true, duration=364, content-length=493,start time=2020-08-19T11:46:39.930Z, status=(200 : OK)]
+
+```
+
 ## Running url-xi as a http server 
 
 ```
@@ -409,6 +510,7 @@ url-xi -s
  ### Supported query parameter
  - nodata = Produce result without data
  - baseUrl = change the base URL. Qual as -u parameter in cli interface
+ - inputs  = List of input variables . Example : inputs="api_key=DEMO_KEY"
 
 
  ```

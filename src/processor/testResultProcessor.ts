@@ -48,6 +48,7 @@ export class TestResultProcessor extends TestBase {
             "duration": 0,
             "contentLength": 0,
             "startTime": Date.now(),
+            "endTime": Date.now(),
             "returnValue": -1,
             "stepResults": []
         }
@@ -59,49 +60,60 @@ export class TestResultProcessor extends TestBase {
     }
 
     public viewResults(results: ITestResults) {
-        //console.log("\n----- Process results [%s] -----\n",results.testName)
+        //console.info("\n----- Process results [%s] -----\n",results.testName)
 
-        console.log(colors.blue.bold(`\n----- Process results [${results.testName}] -----\n`));
-        console.log(colors.magenta.bold("----- [Test Summary] -----"))
-        console.log("\tTotal Response Time: %d", results.duration)
-        console.log("\tStart Time: %s", new Date(results.startTime).toISOString())
-        console.log("\tNumber of steps: %d", results?.stepResults?.length || 0)
-        console.log("\tTotal Content length: %d", results.contentLength)
-        console.log("\tReturn value: %d", results.returnValue)
+        console.info(colors.blue.bold(`\n----- Process results [${results.testName}] -----\n`));
+        console.info(colors.magenta.bold("----- [Test Summary] -----"))
+        console.info("\tTotal Response Time: %d", results.duration)
+        console.info("\tStart Time: %s", new Date(results.startTime).toISOString())
+        console.info("\tEnd Time: %s", new Date(results.endTime).toISOString())
+        console.info("\tNumber of steps: %d", results?.stepResults?.length || 0)
+        console.info("\tTotal Content length: %d", results.contentLength)
+        console.info("\tReturn value: %d", results.returnValue)
 
         let success = `\tResult success: ${results.success}`
         if (results.success)
-            console.log(success.green.bold)
+            console.info(success.green.bold)
         else
-            console.log(success.red.bold)
-        console.log("")
+            console.info(success.red.bold)
+        console.info("")
         if (results?.variables?.length) {
-            console.log(colors.cyan.bold("----- [Variables values] -----"))
+            console.info(colors.cyan.bold("----- [Variables values] -----"))
             for (let idx: number = 0; idx < results.variables.length; idx++) {
                 let variable: IVariable = results.variables[idx]
-                console.log("\tname=%s , value=%s %s, usage=%s", variable.key, variable.value, variable.unit|| '', variable.usage || "internal")
+                console.info("\tname=%s , value=%s %s, usage=%s", variable.key, variable.value, variable.unit || '', variable.usage || "internal")
             }
-            console.log("")
+            console.info("")
         }
-        console.log(colors.yellow.bold("----- [Steps result] -----"))
+        console.info(colors.yellow.bold("----- [Steps result] -----"))
         for (let idx: number = 0; idx < results.stepResults.length; idx++) {
             let stepResult: IStepResult = results.stepResults[idx]
             let stepName = `\t${stepResult.stepName}`
+            console.info("")
             if (stepResult.success === true)
-                console.log(`${stepName}`.green.bold)
+                console.info(`${stepName}`.green.bold)
             else
-                console.log(`${stepName}`.red.bold)
-            console.log("\t  [success=%s, duration=%d, content-length=%d, start time=%s, ignore duration=%s]", stepResult.success, stepResult.duration, stepResult.contentLength, new Date(stepResult.startTime).toISOString(), stepResult.ignoreDuration)
-            stepResult.requestResults.forEach(requestResult => {
-                console.log("\t\t[%s] %s ".white.bold, requestResult.config?.method?.toLocaleUpperCase() || "GET", requestResult.config?.url)
+                console.info(`${stepName}`.red.bold)
+            console.info("\t  [success=%s, duration=%d, content-length=%d, start time=%s, ignore duration=%s]", stepResult.success, stepResult.duration, stepResult.contentLength, new Date(stepResult.startTime).toISOString(), stepResult.ignoreDuration)
+            stepResult.assertions?.forEach(assertion => {
+                let message = `\t    ${assertion.description} [value=${assertion.value} : ${assertion.expression}]`
+                if (!assertion.success)
+                    console.info(message.red)
+                else if (this._debug)
+                    console.info(message.green)
+            })
 
-                console.log("\t\t  [success=%s, duration=%d, content-length=%d,start time=%s, status=(%d : %s)]".white,
+            stepResult.requestResults.forEach(requestResult => {
+                console.info("\t\t[%s] %s ".white.bold, requestResult.config?.method?.toLocaleUpperCase() || "GET", requestResult.config?.url)
+
+                console.info("\t\t  [success=%s, duration=%d, content-length=%d,start time=%s, status=(%d : %s)]".white,
                     requestResult.success, requestResult.duration, requestResult.contentLength,
                     new Date(requestResult.startTime).toISOString(),
                     requestResult.status, requestResult.statusText)
             }
             )
         }
+        console.info("")
 
     }
 }

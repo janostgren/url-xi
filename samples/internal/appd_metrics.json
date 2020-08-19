@@ -19,7 +19,7 @@
             "key": "output",
             "type": "string",
             "usage": "",
-            "value": "'json'"
+            "value": "json"
         },
         {
             "key": "applicationId",

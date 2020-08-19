@@ -3,6 +3,7 @@ import {IVariable} from './ITestConfig'
 
 interface IBaseResult {
     startTime:number
+    endTime:number
     duration:number
     contentLength:number
     success:boolean

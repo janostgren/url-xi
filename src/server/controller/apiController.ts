@@ -29,6 +29,10 @@ export class ApiController {
         if(base_url) {
             base_url=helpers.unDotify(base_url)
         }
+        let inputs:string=request?.query?.inputs?.toString() || ""
+        if(inputs && helpers.isDotedString(inputs))
+            inputs=helpers.unDotify(inputs)
+        
         let ok:boolean=this._testConfig.create(JSON.stringify(request.body),base_url)
         if(!ok) {
             let errors=this._testConfig.errors()
@@ -37,7 +41,7 @@ export class ApiController {
         } 
         let nodata=request?.query?.nodata == 'true'
       
-        let test_results:ITestResults = await this._testRunner.run(nodata);
+        let test_results:ITestResults = await this._testRunner.run(nodata,inputs);
         response.status(200).send(test_results);
         return true
     }
