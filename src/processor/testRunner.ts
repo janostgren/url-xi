@@ -28,7 +28,7 @@ export class TestRunner extends TestBase {
         let regex = /{{.*}}/
         let jsonStr: string = JSON.stringify(config)
         while (regex.test(jsonStr)) {
-            jsonStr = this._testConfig.replaceWithVarVaule(jsonStr)
+            jsonStr = this._testConfig.replaceWithVarValue(jsonStr)
         }
         let ret: AxiosRequestConfig = JSON.parse(jsonStr)
 
@@ -37,7 +37,7 @@ export class TestRunner extends TestBase {
 
     public replaceFromJSON(json: any) {
         let jsonStr: string = JSON.stringify(json)
-        let s: string = this._testConfig.replaceWithVarVaule(jsonStr)
+        let s: string = this._testConfig.replaceWithVarValue(jsonStr)
         let ret: any = JSON.parse(s)
         return ret
     }
@@ -45,7 +45,7 @@ export class TestRunner extends TestBase {
     private transform(transformers: ITransformer[]) {
         transformers.forEach(transformer => {
             let vars = transformer.target.split(",")
-            let value: string = this._testConfig.replaceWithVarVaule(transformer.source)
+            let value: string = this._testConfig.replaceWithVarValue(transformer.source)
             switch (transformer.type) {
                 case 'extract':
                     let regExp: RegExp = new RegExp(transformer.from)
@@ -80,15 +80,15 @@ export class TestRunner extends TestBase {
         let results: IAssertionResult[] = []
         assertions.forEach(assertion => {
             let ok: boolean = false
-            let description = this._testConfig.replaceWithVarVaule(assertion.description)
+            let description = this._testConfig.replaceWithVarValue(assertion.description)
             let value: any = ""
             if (assertion.value)
-                value = this._testConfig.replaceWithVarVaule(assertion.value)
+                value = this._testConfig.replaceWithVarValue(assertion.value)
             let result: IAssertionResult = { "description": description, "success": false, "value": value, "expression": "", "failStep": assertion?.failStep || false }
             switch (assertion.type) {
                 case 'javaScript':
                     try {
-                        let s: string = this._testConfig.replaceWithVarVaule(assertion.expression)
+                        let s: string = this._testConfig.replaceWithVarValue(assertion.expression)
                         result.expression = s
                         ok = eval(s) ? true : false
                     }
@@ -128,7 +128,7 @@ export class TestRunner extends TestBase {
             try {
                 let extractor: IExtractor = elem
 
-                let expression: string = this._testConfig.replaceWithVarVaule(extractor.expression)
+                let expression: string = this._testConfig.replaceWithVarValue(extractor.expression)
 
 
                 switch (extractor.type) {
@@ -243,7 +243,7 @@ export class TestRunner extends TestBase {
         if (step.idleBetweenRequests) {
             let idleTime = step.idleBetweenRequests
             if (isNaN(idleTime))
-                idleTime = this._testConfig.replaceWithVarVaule(step.idleBetweenRequests)
+                idleTime = this._testConfig.replaceWithVarValue(step.idleBetweenRequests)
 
             if (!isNaN(idleTime)) {
                 idleBetweenRequest = idleTime
@@ -258,7 +258,7 @@ export class TestRunner extends TestBase {
             if (step.iterator) {
                 iterator = step.iterator
                 if (!Array.isArray(iterator.value))
-                    iterator.value = this._testConfig.replaceWithVarVaule(iterator.value)
+                    iterator.value = this._testConfig.replaceWithVarValue(iterator.value)
             }
             if (iterator.value && Array.isArray(iterator.value))
                 laps = iterator.value.length
@@ -289,7 +289,7 @@ export class TestRunner extends TestBase {
                         if (Array.isArray(config.data) && typeof config?.data[0] === 'string')
                             config.data = config.data.join("")
                         if (typeof config.data === 'string') {
-                            let strdata = this._testConfig.replaceWithVarVaule(config.data)
+                            let strdata = this._testConfig.replaceWithVarValue(config.data)
                             let json = helper.toJson(strdata)
                             config.data = json || strdata
                         }
@@ -478,7 +478,7 @@ export class TestRunner extends TestBase {
             if (this._testConfig.configData.idleBetweenRequests) {
                 let idleTime = this._testConfig.configData.idleBetweenRequests
                 if (isNaN(idleTime))
-                    idleTime = this._testConfig.replaceWithVarVaule(this._testConfig.configData.idleBetweenRequests)
+                    idleTime = this._testConfig.replaceWithVarValue(this._testConfig.configData.idleBetweenRequests)
 
                 if (!isNaN(idleTime)) {
                     idleBetweenRequest = idleTime
@@ -495,7 +495,7 @@ export class TestRunner extends TestBase {
                     config.headers = {
                         "Content-Type": "application/json"
                     }
-                config.baseURL = this._testConfig.replaceWithVarVaule(this._testConfig.configData.baseURL)
+                config.baseURL = this._testConfig.replaceWithVarValue(this._testConfig.configData.baseURL)
                 let api: Api = new Api(config);
                 let foundError: boolean = false
                 for (let idx: number = 0; !foundError && idx < this._testConfig.configData.steps.length; idx++) {

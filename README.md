@@ -1,8 +1,8 @@
 # URL-XI - Extended URL Rest Tester
-Can be used to test/monitor REST based API-s and ordinary HTML based request.
+Can be used to test & monitor REST based API-s and ordinary HTML based http(s) request.
 Supports all http requests GET,PUT,DELETE,POST, HEAD and OPTIONS.
 
-Url-xi is a simplified version POSTMAN and using the same concept, but has better support for a flow of request and correlation of request. It can also return other metrics than response times of the http requests. 
+Url-xi is a simplified version POSTMAN and using a similar concept, but has better support for a flow of request and correlation of request. It can also return other metrics than response times of the http requests. 
 ## System requirements
 - Node js : Must be installed
 ## Installation
@@ -11,7 +11,7 @@ Clone from Github or install from npm with 'npm install url-xi -g'
 ## Concept
 A test case configuration is defined in a JSON file. The configuration can contain several http requests and you can chain them to flow of request with correlation between the requests. Status and response time is reported for each request. Samples are found in the installation directory.
 
-### Correlation/Validation of responses
+## Extractors
 Extractors are used for correlation of request and for validation of response. 
 The following type of extractors are supported:
 - JSONPath
@@ -49,6 +49,29 @@ Are used validation of response of requests. Assertion works togethers with extr
                         }
                     ]
 ```
+## Transforms
+Transforms are used when you need transform values of extractors before the can be used for correlation. Transformers are based on regular expressions.
+``` json
+"transformers": [
+    {
+      "type":"replace",
+      "source": "{{videoHostPath}}/{{videoTemplate}}",
+      "target": "videoChunk",
+      "from": "$Number$",
+      "to": "{{$lapIdx1}}"
+    },
+    {
+      "type":"extract",
+      "source": "{{manifest}}",
+      "target": "videoHostPath",
+      "from": "^((?:\/\/|[^\/]+)*(.*))\/"
+    }
+]
+```
+- *Replace*: Replace source and place result in variable defined in target
+- *Extract*: Extract from source and place result in variables defined in target. Regular expression with groups in from.
+
+
 
 ## Variables
 Variables are used for storing values of extractors or as input parameters.
@@ -269,179 +292,218 @@ See: https://www.npmjs.com/package/axios
 A test case is validated with by follow JSON schema
 ``` json
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "properties": {
-      "testName": {
-        "type": "string"
-      },
-      "description": {
-        "type": "string"
-      },
-      "variables": {
-        "type": "array",
-        "items": [
-          {
-            "type": "object",
-            "properties": {
-              "key": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string",
-                "enum": ["number", "string", "array"]
-              },
-              "usage": {
-                "type": "string",
-                "enum": ["returnValue", "info", "inResponse","input",""]
-              },
-              "value": {
-                
-              }
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "testName": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "variables": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
             },
-            "required": [
-              "key",
-              "type",
-              "usage"
-            ]
-          }
-        ]
-      },
-      "baseURL": {
-        "type": "string"
-      },
-      "config": {
-        "type": "object"
-      },
-      "steps": {
-        "type": "array",
-        "minItems": 1,
-        "items": [
-          {
-            "type": "object",
-            "properties": {
-              "stepName": {
-                "type": "string"
-              },
-              "description": {
-                "type": "string"
-              },
-              "requests": {
-                "type": "array",
-                "minItems": 1,
-                "items": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "config": {
-                        "type": "object",
-                        "properties": {
-                          "method": {
-                            "type": "string"
-                          },
-                          "url": {
-                            "type": "string"
-                          }
+            "type": {
+              "type": "string",
+              "enum": ["number", "string", "array"]
+            },
+            "usage": {
+              "type": "string",
+              "enum": ["returnValue", "info", "inResponse", "input", ""]
+            },
+            "value": {
+
+            }
+          },
+          "required": [
+            "key",
+            "type",
+            "usage"
+
+          ]
+        }
+      ]
+    },
+    "baseURL": {
+      "type": "string"
+    },
+    "config": {
+      "type": "object"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "stepName": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "requests": {
+              "type": "array",
+              "minItems": 1,
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "config": {
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string"
                         },
-                        "required": [
-                          
-                          "url"
-                        ]
+                        "url": {
+                          "type": "string"
+                        }
                       },
-                      "extractors": {
-                        "type": "array",
-                        "items": [
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": ["jsonpath", "regexp", "xpath","header","cookie"]
-                              },
-                              "expression": {
-                                "type": "string"
-                              },
-                              "variable": {
-                                "type": "string"
-                              },
-                              "index": {
-                                "type": "boolean"
-                              },
-                              "counter": {
-                                "type": "boolean"
-                              },
-                              "array": {
-                                "type": "boolean"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "expression",
-                              "variable"
-                            ]
-                          }
-                        ]
-                      },
-                      "assertions": {
-                        "type": "array",
-                        "items": [
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": ["javaScript", "regexp", "value"]
-                              },
-                              "value": {
-                                "type": "string"
-                              },
-                              "description": {
-                                "type": "string"
-                              },
-                              "expression": {
-                                "type": "string"
-                              },
-                              "failStep": {
-                                "type": "boolean"
-                              },
-                              "reportFailOnly": {
-                                "type": "boolean"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "description",
-                              "expression"
-                             
-                            ]
-                          }
-                        ]
+                      "required": [
+                        "url"
+                      ]
+                    },
+                    "expectedStatus": {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "number"
                       }
                     },
-                    "required": [
-                      "config"
-                    
-                    ]
-                  }
-                ]
-              }
-            },
-            "required": [
-              "stepName",
-              
-              "requests"
-            ]
-          }
-        ]
-      }
-    },
-    "required": [
-      "testName",
-      "baseURL",
-      "steps"
-    ]
-  }
+                    "extractors": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["jsonpath", "regexp", "xpath", "header", "cookie"]
+                            },
+                            "expression": {
+                              "type": "string"
+                            },
+                            "variable": {
+                              "type": "string"
+                            },
+                            "index": {
+                              "type": "boolean"
+                            },
+                            "counter": {
+                              "type": "boolean"
+                            },
+                            "array": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "expression",
+                            "variable"
+                          ]
+                        }
+                      ]
+                    },
+                    "assertions": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["javaScript", "regexp", "value"]
+                            },
+                            "value": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "expression": {
+                              "type": "string"
+                            },
+                            "failStep": {
+                              "type": "boolean"
+                            },
+                            "reportFailOnly": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "description",
+                            "expression"
 
+                          ]
+                        }
+                      ]
+                    },
+                    "transformers": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["extract", "replace"]
+                            },
+
+                            "source": {
+                              "type": "string"
+                            },
+                            "target": {
+                              "type": "string"
+                            },
+                            "from": {
+                              "type": "string"
+                            },
+                            "to": {
+                              "type": "string"
+                            }
+
+                          },
+                          "required": [
+                            "source",
+                            "target",
+                            "from"
+
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "config"
+
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "stepName",
+            "requests"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "testName",
+    "baseURL",
+    "steps"
+  ]
+}
 
 ```
 ## Running an URL-XI test CLI
@@ -580,20 +642,20 @@ use it the next extractions.
         {
             "key": "api_key",
             "type": "string",
-            "usage": "",
-            "value": "'DEMO_KEY'"
+            "usage": "input",
+            "value": "DEMO_KEY"
         },
         {
             "key": "application",
             "type": "string",
-            "usage": "",
-            "value": "'DEMO_APP'"
+            "usage": "input",
+            "value": "DEMO_APP"
         },
         {
             "key": "aggregation",
             "type": "string",
             "usage": "",
-            "value": "let arr=['max','min','avg'];arr[Math.floor(Math.random() * arr.length)]"
+            "value": "'let arr=['max','min','avg'];arr[Math.floor(Math.random() * arr.length)]'"
         },
         {
             "key": "pageViewName",
@@ -669,7 +731,7 @@ use it the next extractions.
                         {
                             "type": "javaScript",
                             "value": "{{pageViewDuration}}",
-                            "description": "Duration should be greather than 1 ms",
+                            "description": "Duration should be greater than 1 ms",
                             "expression": "value > 1",
                             "failStep": true
                         },
@@ -687,6 +749,7 @@ use it the next extractions.
         }
     ]
 }
+    
 ```
 ## Result report example 
 This example is without result data. The nodata switch is used.

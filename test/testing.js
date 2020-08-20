@@ -1,6 +1,14 @@
 
 var faker = require('faker')
+var fs= require ('fs')
+var path = require('path')
 console.info("Testing")
+
+let r= path.resolve("./results")
+console.info(r,fs.existsSync(r) && fs.lstatSync(r).isDirectory())
+let f= path.resolve("./xsamples/test.json")
+console.info(path.dirname(f),fs.existsSync(f) && fs.lstatSync(f).isFile())
+
 
 
 var n = "12"
@@ -30,8 +38,8 @@ let name = faker.date.future(10)
 console.log(name)
 console.log(faker.fake("{{name.findName}}, {{name.firstName}} {{name.suffix}}"));
 
-let f = 'finance.mask'
-console.log(fakeData(f))
+let fm = 'finance.mask'
+console.log(fakeData(fm))
 
 
 

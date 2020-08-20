@@ -2,15 +2,15 @@
 import { Command } from 'commander';
 import { TestConfig } from '../config/testConfig'
 import { ITestResults } from '../model/ITestResult'
-import {TestRunner} from '../processor/testRunner'
+import { TestRunner } from '../processor/testRunner'
 import { TestResultProcessor } from '../processor/testResultProcessor';
 import * as log4js from "log4js";
 import path from 'path'
 import fs from 'fs'
-import express  from 'express' 
+import express from 'express'
 import * as apiRouter from '../server/router/apiRouter'
-import * as body_parser from 'body-parser' 
-import * as helpers from  '../lib/helpers'
+import * as body_parser from 'body-parser'
+import * as helpers from '../lib/helpers'
 
 
 const cliLogConfig =
@@ -22,7 +22,7 @@ const cliLogConfig =
             "filename": "log/url-xi.log",
             "maxLogSize": 10485760,
             "numBackups": 3
-           
+
         },
         "errorFile": {
             "type": "file",
@@ -46,12 +46,12 @@ const cliLogConfig =
 
 var test_file: string, result_dir: string, headers: any, debug: boolean
 var parse_only: boolean, resultName: string
-var nodata:boolean
+var nodata: boolean
 var base_url: string
-var inputs:string
+var inputs: string
 var server: string, port: number
-var testfile_path: any
-var pack:any=helpers.getPackageInfo()
+
+var pack: any = helpers.getPackageInfo()
 
 let version = pack.version || 'version unknown'
 
@@ -82,7 +82,7 @@ base_url = program.url
 debug = program.debug
 inputs = program.inputs
 parse_only = program.parse_only
-nodata =program.nodata
+nodata = program.nodata
 resultName = program.result_name
 server = program.server
 port = Number(program.port)
@@ -93,17 +93,28 @@ if (!server) {
         console.error("-f is mandatory and must end with .json")
         process.exit(9)
     }
-    testfile_path = path.parse(test_file)
-    if (!testfile_path) {
-        console.error("The specified test file %s is not valid", test_file)
+    let tf_path = path.resolve(test_file)
+    if (!fs.existsSync(tf_path) || !fs.lstatSync(tf_path).isFile()) {
+        console.error("The specified test file [%s] is not valid", test_file)
         process.exit(9)
     }
-    if (result_dir && !fs.lstatSync(result_dir).isDirectory()) {
-        console.error("The result_dir %s is not valid", result_dir)
-        process.exit(9)
+    if (result_dir) {
+        let res_path = path.resolve(result_dir)
+        if (!fs.existsSync(res_path) || !fs.lstatSync(res_path).isDirectory()) {
+            console.error("The result_dir [%s] is not a valid directory", result_dir)
+            process.exit(9)
+        }
+        if(path.dirname(tf_path) === res_path) {
+            console.error("The result_dir [%s] and directory of test file [%s] must be different directories ", result_dir,test_file)
+            process.exit(9)
+
+        }
+        
     }
-    if (!resultName)
-        resultName = testfile_path.name
+    if (!resultName) {
+        let tf=path.parse(tf_path)
+        resultName = tf.name
+    }
 }
 
 /*
@@ -156,7 +167,7 @@ async function run_cli() {
         }
         if (exitCode === 0 && !parse_only) {
             let testRunner: TestRunner = new TestRunner(testConfig, debug);
-            let results: ITestResults = await testRunner.run(nodata,inputs);
+            let results: ITestResults = await testRunner.run(nodata, inputs);
             exitCode = results.stepResults ? 0 : 1
             resultProcessor.viewResults(results);
             if (result_dir) {
@@ -170,32 +181,32 @@ async function run_cli() {
     process.exit(exitCode)
 }
 
-function mapStatic(app:express.Application,dir:string,pathDir:string) {
-    let staticDir:string = path.join(__dirname, dir)
+function mapStatic(app: express.Application, dir: string, pathDir: string) {
+    let staticDir: string = path.join(__dirname, dir)
     app.use(pathDir, express.static(staticDir))
-    logger.info ("Static dir %s mapped to path=%s",pathDir,staticDir)
+    logger.info("Static dir %s mapped to path=%s", pathDir, staticDir)
 
 }
 
 function run_server() {
 
-    let app:express.Application = express()
+    let app: express.Application = express()
     app.use(body_parser.urlencoded({ extended: true }));
     app.use(body_parser.json());
     app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
-    var router = express.Router();  
+    var router = express.Router();
     router.use(apiRouter.router)
     app.use('/api', router);
-    app.get('/', function(req, res) {
+    app.get('/', function (req, res) {
         res.sendFile(path.join(__dirname + '../../../client/index.html'));
     });
-   
 
-    mapStatic(app,'../../client/resources','/resources')
+
+    mapStatic(app, '../../client/resources', '/resources')
     //mapStatic(app,'../../node_modules','/module')
     //mapStatic(app,'../../dist/client','/client')
- 
+
     app.listen(port, () =>
-    logger.info("URL XI server (version %s) started on http port %d" ,version,port));
+        logger.info("URL XI server (version %s) started on http port %d", version, port));
 }
 

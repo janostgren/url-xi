@@ -91,7 +91,7 @@ export class TestConfig extends TestBase {
                         if (helpers.isDotedString(v.value))
                             v.value = eval(helpers.unDotify(v.value))
                         else if (typeof v.value === 'string')
-                            v.value = this.replaceWithVarVaule(v.value)
+                            v.value = this.replaceWithVarValue(v.value)
                     }
                     this._varMap.set(v.key, v)
                 }
@@ -119,7 +119,7 @@ export class TestConfig extends TestBase {
     }
 
 
-    public replaceWithVarVaule(str: string) {
+    public replaceWithVarValue(str: string) {
         let vars: Map<string, IVariable> = this._varMap
         let ret: any = ""
         let val: any = str.replace(/{{(\$?[A-Za-z_][\w\.]*\w)}}/gm, function (x: string, y: string) {
