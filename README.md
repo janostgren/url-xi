@@ -1,15 +1,15 @@
 # URL-XI - Extended URL Rest Tester
-Can be used to test & monitor REST based API-s and ordinary HTML based http(s) request.
+Can be used to test & monitor REST based API-s and ordinary HTML based http(s) requests.
 Supports all http requests GET,PUT,DELETE,POST, HEAD and OPTIONS.
 
-Url-xi is a simplified version POSTMAN and using a similar concept, but has better support for a flow of request and correlation of request. It can also return other metrics than response times of the http requests. 
+Url-xi is a simplified version POSTMAN and using a similar concept, but has better support for a flow of request and correlation of request. It can additionally return other metrics than response times of the http requests as the main return value of the test case.
 ## System requirements
 - Node js : Must be installed
 ## Installation
 Clone from Github or install from npm with 'npm install url-xi -g'  
 
 ## Concept
-A test case configuration is defined in a JSON file. The configuration can contain several http requests and you can chain them to flow of request with correlation between the requests. Status and response time is reported for each request. Samples are found in the installation directory.
+A test case configuration is defined in a JSON file. The configuration can contain several http requests and you can chain them to a flow of request with correlation between the requests. Status and response time is reported for each request. Samples are found in the installation directory.
 
 ## Extractors
 Extractors are used for correlation of request and for validation of response. 
@@ -21,36 +21,51 @@ The following type of extractors are supported:
 
 ``` json
 "extractors": [
-                {
-                    "type": "xpath",
-                    "expression": "//*[local-name() = 'GameId']/text()",
-                    "variable": "gameId"
-                },
-                {
-                    "type": "regexp",
-                    "expression": "b:GameId>(\\d+)<",
-                    "variable": "gameId2"
-                }
-            ]
-
+  {
+    "type": "xpath",
+     "expression": "//*[local-name() = 'GameId']/text()",
+      "variable": "gameId"
+  },
+  {
+    "type": "regexp",
+    "expression": "b:GameId>(\\d+)<",
+    "variable": "gameId2"
+  },
+  {
+    "type": "header",
+    "expression": "content-type",
+    "variable": "homePageContent"
+  },
+  {
+    "type": "regexp",
+    "expression": "<script\\s+src=\"(.+)\">\\s+<\/script>",
+    "variable": "javaScripts",
+    "array": true
+  },
+]
 ```
+Special boolean flags that can be used in extractors
+- *array* : Save the array of extracted values. Default is to save a random value in the array.
+- *index* : Save a random index of extracted array instead of the random value.
+- *counter* : Save the size of the extracted array.
+
 ## Assertions 
 Are used validation of response of requests. Assertion works togethers with extractors and variables. Result of assertions are stored in the test result.
 
 ``` json
  "assertions": [
-                        {
-                            "type": "javaScript",
-                            "value": "{{origin}}",
-                            "description": "Returned origin should contain an IP address. Method={{method}}",
-                            "expression": "/^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$/.test(value)",
-                            "failStep": true,
-                            "reportFailOnly":true
-                        }
-                    ]
+    {
+      "type": "javaScript",
+      "value": "{{origin}}",
+      "description": "Returned origin should contain an IP address. Method={{method}}",
+      "expression": "/^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$/.test(value)",
+      "failStep": true,
+      "reportFailOnly":true
+    }
+]
 ```
 ## Transforms
-Transforms are used when you need transform values of extractors before the can be used for correlation. Transformers are based on regular expressions.
+Transforms are used when you need to transform values of extractors before the can be used for correlation. Transformers are based on regular expressions.
 ``` json
 "transformers": [
     {
@@ -70,7 +85,6 @@ Transforms are used when you need transform values of extractors before the can 
 ```
 - *Replace*: Replace source and place result in variable defined in target
 - *Extract*: Extract from source and place result in variables defined in target. Regular expression with groups in from.
-
 
 
 ## Variables
@@ -116,11 +130,11 @@ Variables which are not defined int variables sections are called dynamic variab
 ### Variable placeholders
 All variables can be defined with the mustache syntax. A placeholder looks like this {{variableName}}
 ### System variables
-- $timestamp - Current timestamp (ms) epoch format 
-- $testName - Name of current test
-- $stepName - Name of current step
-- $lap - The lap number when an iterator is used. Starts with 0 
-- $lapIdx1 - The lap number when an iterator is used. Starts with 1 
+- *$timestamp* - Current timestamp (ms) epoch format 
+- *$testName* - Name of current test
+- *$stepName* - Name of current step
+- *$lap* - The lap number when an iterator is used. Starts with 0 
+- *$lapIdx1* - The lap number when an iterator is used. Starts with 1 
 ## Random data generation
 Random data generation with the NPM module faker is supported. Can be used as variables or be dynamically generated with mustache syntax for placeholders. 
 ``` json

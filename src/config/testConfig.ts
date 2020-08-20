@@ -118,7 +118,6 @@ export class TestConfig extends TestBase {
         }
     }
 
-
     public replaceWithVarValue(str: string) {
         let vars: Map<string, IVariable> = this._varMap
         let ret: any = ""

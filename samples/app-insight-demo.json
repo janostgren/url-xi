@@ -29,13 +29,13 @@
             "key": "pageViewIndex",
             "type": "number",
             "usage": "",
-            "value":0
+            "value": 0
         },
         {
             "key": "pageViewDuration",
             "type": "number",
             "usage": "returnValue",
-            "value":0
+            "value": 0
         }
     ],
     "baseURL": "https://api.applicationinsights.io",
@@ -47,7 +47,6 @@
     "steps": [
         {
             "stepName": "Get Page views",
-            
             "requests": [
                 {
                     "config": {
@@ -71,7 +70,7 @@
                             "type": "jsonpath",
                             "expression": "$[0].body.value.segments[*].pageView/name",
                             "variable": "pageViewIndex",
-                            "index":true
+                            "index": true
                         },
                         {
                             "type": "jsonpath",
@@ -88,7 +87,6 @@
                             "expression": "$[0].id",
                             "variable": "id"
                         }
-                       
                     ],
                     "assertions": [
                         {
@@ -105,9 +103,8 @@
                             "expression": "(max|min|avg)",
                             "failStep": true
                         }
-                       
                     ]
-                }     
+                }
             ]
         }
     ]

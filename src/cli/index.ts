@@ -73,8 +73,6 @@ program
 
 program.parse(process.argv);
 
-
-
 test_file = program.file;
 result_dir = program.results;
 headers = JSON.parse(program.xheaders)
@@ -201,11 +199,8 @@ function run_server() {
         res.sendFile(path.join(__dirname + '../../../client/index.html'));
     });
 
-
     mapStatic(app, '../../client/resources', '/resources')
-    //mapStatic(app,'../../node_modules','/module')
-    //mapStatic(app,'../../dist/client','/client')
-
+    
     app.listen(port, () =>
         logger.info("URL XI server (version %s) started on http port %d", version, port));
 }

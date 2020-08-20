@@ -1,187 +1,187 @@
 {
-    "testName": "Run ASM Check",
-    "description": "Run an ASM check an wait for response",
-    "baseURL": "https://api-wpm2.apicasystem.com",
-    "variables": [
+  "testName": "Run ASM Check",
+  "description": "Run an ASM check and wait for response",
+  "variables": [
+    {
+      "key": "checkId",
+      "type": "number",
+      "usage": "input",
+      "value": 47142,
+      "validation": "value > 0 && Number.isSafeInteger(value)"
+    },
+    {
+      "key": "auth_ticket",
+      "type": "string",
+      "usage": "input",
+      "value": "56B06B41-2944-401B-86A7-3ACF8A9F4C7B"
+    },
+    {
+      "key": "checkName",
+      "type": "string",
+      "usage": "inResponse"
+    },
+    {
+      "key": "checkType",
+      "type": "string",
+      "usage": "inResponse"
+    },
+    {
+      "key": "severity",
+      "type": "string",
+      "usage": "inResponse"
+    },
+    {
+      "key": "message",
+      "type": "string",
+      "usage": "inResponse"
+    },
+    {
+      "key": "value",
+      "type": "number",
+      "usage": "returnValue",
+      "value": 0
+    },
+    {
+      "key": "requestIdleTime",
+      "type": "number",
+      "usage": "input",
+      "value": 10000,
+      "validation": "value > 999 && value <= 15000"
+    },
+    {
+      "key": "pollCount",
+      "type": "number",
+      "usage": "input",
+      "value": 12,
+      "validation": "value > 0 && value <51"
+    }
+  ],
+  "baseURL": "https://api-wpm2.apicasystem.com",
+  "steps": [
+    {
+      "stepName": "Get Check info",
+      "requests": [
         {
-            "key": "checkId",
-            "type": "number",
-            "usage": "input",
-            "value": 47142,
-            "validation": "value > 0 && Number.isSafeInteger(value)"
-        },
-        {
-            "key": "auth_ticket",
-            "type": "string",
-            "usage": "input",
-            "value": "56B06B41-2944-401B-86A7-3ACF8A9F4C7B"
-        },
-        {
-            "key": "checkName",
-            "type": "string",
-            "usage": "inResponse"
-        },
-        {
-            "key": "checkType",
-            "type": "string",
-            "usage": "inResponse"
-        },
-        {
-            "key": "severity",
-            "type": "string",
-            "usage": "inResponse"
-        },
-        {
-            "key": "message",
-            "type": "string",
-            "usage": "inResponse"
-        },
-        {
-            "key": "value",
-            "type": "number",
-            "usage": "returnValue",
-            "value": 0
-        },
-        {
-            "key": "requestIdleTime",
-            "type": "number",
-            "usage": "input",
-            "value": 10000,
-            "validation": "value > 999 && value <= 15000"
-        },
-        {
-            "key": "pollCount",
-            "type": "number",
-            "usage": "input",
-            "value": 12,
-            "validation": "value > 0 && value <51"
-        }
-    ],
-    "steps": [
-
-        {
-            "stepName": "Get Check info",
-            "requests": [
-                {
-                    "config": {
-                        "url": "/v3/Checks/{{checkId}}",
-                        "params": {
-                            "auth_ticket": "{{auth_ticket}}"
-                        }
-                    },
-                    "extractors": [
-                        {
-                            "type": "jsonpath",
-                            "expression": "$.name",
-                            "variable": "checkName"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$.check_type_name",
-                            "variable": "checkType"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$.value",
-                            "variable": "value"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$.severity",
-                            "variable": "severity"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$.last_result_details.message",
-                            "variable": "message"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$.enabled",
-                            "variable": "enabled"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$.timestamp_utc",
-                            "variable": "timestamp_utc_1"
-                        }
-                    ],
-                    "assertions": [
-                        {
-                            "type": "value",
-                            "value": "{{enabled}}",
-                            "description": "Check must be enabled to run",
-                            "expression": "true",
-                            "failStep": true
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "stepName": "Run Check",
-            "requests": [
-                {
-                    "config": {
-                        "url": "/v3/Checks/{{checkId}}/job",
-                        "method": "post",
-                        "params": {
-                            "auth_ticket": "{{auth_ticket}}"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "stepName": "Poll for new result",
-            "idleBetweenRequests": "{{requestIdleTime}}",
-            "iterator": {
-                "value": "{{pollCount}}",
-                "waitForValidResponse": true
+          "config": {
+            "url": "/v3/Checks/{{checkId}}",
+            "params": {
+              "auth_ticket": "{{auth_ticket}}"
+            }
+          },
+          "extractors": [
+            {
+              "type": "jsonpath",
+              "expression": "$.name",
+              "variable": "checkName"
             },
-            "requests": [
-                {
-                    "config": {
-                        "url": "/v3/Checks/{{checkId}}/results",
-                        "params": {
-                            "auth_ticket": "{{auth_ticket}}",
-                            "mostrecent": "1",
-                            "detail_level": "1"
-                        }
-                    },
-                    "extractors": [
-                        {
-                            "type": "jsonpath",
-                            "expression": "$[0].value",
-                            "variable": "value"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$[0].severity",
-                            "variable": "severity"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$[0].message",
-                            "variable": "message"
-                        },
-                        {
-                            "type": "jsonpath",
-                            "expression": "$[0].timestamp_utc",
-                            "variable": "timestamp_utc_2"
-                        }
-                    ],
-                    "assertions": [
-                        {
-                            "type": "javaScript",
-                            "value": "{{timestamp_utc_2}}",
-                            "description": "Looking for new results from check {{checkName}} after running the check.",
-                            "expression": "value > '{{timestamp_utc_1}}'",
-                            "failStep": true
-                        }
-                    ]
-                }
-            ]
+            {
+              "type": "jsonpath",
+              "expression": "$.check_type_name",
+              "variable": "checkType"
+            },
+            {
+              "type": "jsonpath",
+              "expression": "$.value",
+              "variable": "value"
+            },
+            {
+              "type": "jsonpath",
+              "expression": "$.severity",
+              "variable": "severity"
+            },
+            {
+              "type": "jsonpath",
+              "expression": "$.last_result_details.message",
+              "variable": "message"
+            },
+            {
+              "type": "jsonpath",
+              "expression": "$.enabled",
+              "variable": "enabled"
+            },
+            {
+              "type": "jsonpath",
+              "expression": "$.timestamp_utc",
+              "variable": "timestamp_utc_1"
+            }
+          ],
+          "assertions": [
+            {
+              "type": "value",
+              "value": "{{enabled}}",
+              "description": "Check must be enabled to run",
+              "expression": "true",
+              "failStep": true,
+              "reportFailOnly": true
+            }
+          ]
         }
-    ]
+      ]
+    },
+    {
+      "stepName": "Run Check",
+      "requests": [
+        {
+          "config": {
+            "url": "/v3/Checks/{{checkId}}/job",
+            "method": "post",
+            "params": {
+              "auth_ticket": "{{auth_ticket}}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stepName": "Poll for new result",
+      "idleBetweenRequests": "{{requestIdleTime}}",
+      "iterator": {
+        "value": "{{pollCount}}",
+        "waitForValidResponse": true
+      },
+      "requests": [
+        {
+          "config": {
+            "url": "/v3/Checks/{{checkId}}/results",
+            "params": {
+              "auth_ticket": "{{auth_ticket}}",
+              "mostrecent": "1",
+              "detail_level": "1"
+            }
+          },
+          "extractors": [
+            {
+              "type": "jsonpath",
+              "expression": "$[0].value",
+              "variable": "value"
+            },
+            {
+              "type": "jsonpath",
+              "expression": "$[0].severity",
+              "variable": "severity"
+            },
+            {
+              "type": "jsonpath",
+              "expression": "$[0].message",
+              "variable": "message"
+            },
+            {
+              "type": "jsonpath",
+              "expression": "$[0].timestamp_utc",
+              "variable": "timestamp_utc_2"
+            }
+          ],
+          "assertions": [
+            {
+              "type": "javaScript",
+              "value": "{{timestamp_utc_2}}",
+              "description": "Looking for new results from check {{checkName}} after running the check.",
+              "expression": "value > '{{timestamp_utc_1}}'",
+              "failStep": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

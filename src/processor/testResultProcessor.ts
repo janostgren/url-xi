@@ -1,5 +1,3 @@
-
-
 import colors from 'colors'
 import fs from 'fs'
 import path from 'path'
@@ -9,9 +7,6 @@ import * as helper from '../lib/helpers'
 import { TestBase } from '../lib/testbase'
 import { IVariable } from '../model/ITestConfig'
 import { IStepResult, ITestResults } from '../model/ITestResult'
-
-
-
 
 export class TestResultProcessor extends TestBase {
 
@@ -35,7 +30,6 @@ export class TestResultProcessor extends TestBase {
     public async saveErrors(content: string, errors: object[], result_dir: string, resultName?: string) {
 
         resultName = this._createResultName(resultName)
-
         let resultFile = path.resolve(result_dir, resultName + ".json")
         let json: any = {}
         if (content) {
@@ -60,7 +54,6 @@ export class TestResultProcessor extends TestBase {
     }
 
     public viewResults(results: ITestResults) {
-        //console.info("\n----- Process results [%s] -----\n",results.testName)
 
         console.info(colors.blue.bold(`\n----- Process results [${results.testName}] -----\n`));
         console.info(colors.magenta.bold("----- [Test Summary] -----"))
