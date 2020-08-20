@@ -55,8 +55,9 @@ export class TestResultProcessor extends TestBase {
 
     public viewResults(results: ITestResults) {
 
-        console.info(colors.blue.bold(`\n----- Process results [${results.testName}] -----\n`));
+        console.info(colors.cyan.bold(`\n----- Process results [${results.testName}] -----\n`));
         console.info(colors.magenta.bold("----- [Test Summary] -----"))
+        console.info("\tTest Name: %s", results.testName)
         console.info("\tTotal Response Time: %d", results.duration)
         console.info("\tStart Time: %s", new Date(results.startTime).toISOString())
         console.info("\tEnd Time: %s", new Date(results.endTime).toISOString())
@@ -87,19 +88,20 @@ export class TestResultProcessor extends TestBase {
                 console.info(`${stepName}`.green.bold)
             else
                 console.info(`${stepName}`.red.bold)
-            console.info("\t  [success=%s, duration=%d, content-length=%d, start time=%s, ignore duration=%s]", stepResult.success, stepResult.duration, stepResult.contentLength, new Date(stepResult.startTime).toISOString(), stepResult.ignoreDuration)
+            console.info("\t\t[success=%s, duration=%d, content-length=%d, start time=%s, ignore duration=%s]", stepResult.success, stepResult.duration, stepResult.contentLength, new Date(stepResult.startTime).toISOString(), stepResult.ignoreDuration)
             stepResult.assertions?.forEach(assertion => {
-                let message = `\t    ${assertion.description} [value=${assertion.value} : ${assertion.expression}]`
+                let message = `\t\t  ${assertion.description} [value=${assertion.value} : ${assertion.expression}]`
                 if (!assertion.success)
                     console.info(message.red)
                 else if (this._debug)
                     console.info(message.green)
             })
+            console.info("")
 
             stepResult.requestResults.forEach(requestResult => {
-                console.info("\t\t[%s] %s ".white.bold, requestResult.config?.method?.toLocaleUpperCase() || "GET", requestResult.config?.url)
+                console.info("\t  [%s] %s ".white.bold, requestResult.config?.method?.toLocaleUpperCase() || "GET", requestResult.config?.url)
 
-                console.info("\t\t  [success=%s, duration=%d, content-length=%d,start time=%s, status=(%d : %s)]".white,
+                console.info("\t\t  [success=%s, duration=%d, content-length=%d,start time=%s, status=(%d : %s)]",
                     requestResult.success, requestResult.duration, requestResult.contentLength,
                     new Date(requestResult.startTime).toISOString(),
                     requestResult.status, requestResult.statusText)
