@@ -1,6 +1,6 @@
 {
   "name": "url-xi",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "URL Check for integrations",
   "main": "dist/cli/index.js",
   "scripts": {
