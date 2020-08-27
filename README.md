@@ -153,6 +153,7 @@ You can use standard JSON for posting an *application/x-www-form-urlencoded* for
 ``` json
 {
             "stepName": "Azure Portal Login (OAUTH2)",
+            "disabled":false,
             "requests": [
                 {
                     "config": {
@@ -197,6 +198,7 @@ You can use standard JSON for posting an *application/x-www-form-urlencoded* for
             ]
         } 
 ```
+Here we also show the feature that steps and requests can be disabled with the *disabled* boolean property
 
 ## Iterator
 You can use an iterator to iterate a step in several laps. An iterator can be based on a number or an array. Variable substitution is supported for the value of the iterator. The variable must be of type array and extraction must have the array flag.
@@ -296,7 +298,7 @@ You can use an iterator to iterate a step in several laps. An iterator can be ba
 Data in request as JSON is supported by default. If data is string format you must use an array for complex requests. Here comes a SOAP example with xml data.
 ``` json
 {
-            "stepName": "Get Remaing Tickets for Game",
+            "stepName": "Get Remaining Tickets for Game",
             "requests": [
                 {
                     "config": {
@@ -356,7 +358,7 @@ See: https://www.npmjs.com/package/axios
 A test case is validated with by follow JSON schema
 ``` json
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "testName": {

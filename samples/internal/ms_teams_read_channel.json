@@ -92,6 +92,7 @@
         },
         {
             "stepName": "Azure Portal Refresh Token (OAUTH2)",
+            "disabled": true,
             "requests": [
                 {
                     "config": {

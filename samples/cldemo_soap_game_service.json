@@ -70,7 +70,7 @@
             ]
         },
         {
-            "stepName": "Get Remaing Tickets for Game",
+            "stepName": "Get Remaining Tickets for Game",
             "requests": [
                 {
                     "config": {

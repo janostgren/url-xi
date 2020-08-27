@@ -57,12 +57,18 @@ export const testCaseSchema = {
             "description": {
               "type": "string"
             },
+            "disabled": {
+              "type": "boolean"
+            },
             "requests": {
               "type": "array",
               "minItems": 1,
               "items": [
                 {
                   "type": "object",
+                  "disabled": {
+                    "type": "boolean"
+                  },
                   "properties": {
                     "config": {
                       "type": "object",

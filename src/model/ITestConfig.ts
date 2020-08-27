@@ -37,6 +37,7 @@ export interface IRequest {
     assertions?:IAssertion[]
     transformers?:ITransformer[]
     notSaveData?:boolean
+    disabled?:boolean
 }
 
 export type ExtractorType = 'jsonpath' | 'xpath' | 'regexp'| 'header' | 'cookie'|'javaScript'
@@ -59,6 +60,7 @@ export interface IStepIterator {
 interface IBaseConfigItem {
     idleBetweenRequests?:any
     description?:string
+    
 }
 
 export interface ITestStep extends IBaseConfigItem{
@@ -66,6 +68,7 @@ export interface ITestStep extends IBaseConfigItem{
     ignoreDuration?:boolean
     requests: IRequest[]
     iterator?:IStepIterator
+    disabled?:boolean
 }
 
 export type VariableType = 'string' | 'number' | 'array'
