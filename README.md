@@ -147,6 +147,56 @@ Random data generation with the NPM module faker is supported. Can be used as va
 ```
 See: https://www.npmjs.com/package/faker for all placeholders
 
+## Posting data with x-www-form-urlencoded content type
+You can use standard JSON for posting an *application/x-www-form-urlencoded* form with comma separated values.
+
+``` json
+{
+            "stepName": "Azure Portal Login (OAUTH2)",
+            "requests": [
+                {
+                    "config": {
+                        "method": "post",
+                        "url": "https://login.microsoftonline.com/{{tentantId}}/oauth2/v2.0/token",
+                        "data": {
+                            "username": "{{username}}",
+                            "password": "{{password}}",
+                            "grant_type": "password",
+                            "client_secret": "{{client_secret}}",
+                            "client_id": "{{client_id}}",
+                            "scope": "https://graph.microsoft.com/.default offline_access"
+                        },
+                        "headers": {
+                            "Content-type": "application/x-www-form-urlencoded",
+                            "Accept": "application/json; charset=utf-8"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.access_token",
+                            "variable": "accessToken"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.refresh_token",
+                            "variable": "refreshToken"
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value": "{{accessToken}}",
+                            "description": "Login must return a valid access token.",
+                            "expression": "value !== undefined",
+                            "failStep": true,
+                            "reportFailOnly": true
+                        }
+                    ]
+                }
+            ]
+        } 
+```
 
 ## Iterator
 You can use an iterator to iterate a step in several laps. An iterator can be based on a number or an array. Variable substitution is supported for the value of the iterator. The variable must be of type array and extraction must have the array flag.
