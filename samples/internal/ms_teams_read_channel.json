@@ -1,0 +1,201 @@
+{
+    "testName": "Read MS Teams Message",
+    "description": "Read a message from MS Teams chat channel",
+    "variables": [
+        {
+            "key": "username",
+            "type": "string",
+            "usage": "input",
+            "value": "apica.alerter@demoapica.onmicrosoft.com"
+        },
+        {
+            "key": "password",
+            "type": "string",
+            "usage": "input",
+            "value": "Cool..4AA"
+        },
+        {
+            "key": "client_secret",
+            "type": "string",
+            "usage": "input",
+            "value": "5xMrPu=BJMEC.]?2iPmLXylyzct75+[+"
+        },
+        {
+            "key": "tentantId",
+            "type": "string",
+            "usage": "input",
+            "value": "7e4c9757-c31e-4df3-8844-aac32058f5a4"
+        },
+        {
+            "key": "client_id",
+            "type": "string",
+            "usage": "input",
+            "value": "61ff0b43-7bde-44f6-a371-849dcae23b10"
+        },
+        {
+            "key": "channelName",
+            "type": "string",
+            "usage": "inResponse"
+        },
+        {
+            "key": "messageCount",
+            "type": "number",
+            "usage": "returnValue"
+        }
+    ],
+    "baseURL": "https://graph.microsoft.com",
+    "steps": [
+        {
+            "stepName": "Azure Portal Login (OAUTH2)",
+            "requests": [
+                {
+                    "config": {
+                        "method": "post",
+                        "url": "https://login.microsoftonline.com/{{tentantId}}/oauth2/v2.0/token",
+                        "data": {
+                            "username": "{{username}}",
+                            "password": "{{password}}",
+                            "grant_type": "password",
+                            "client_secret": "{{client_secret}}",
+                            "client_id": "{{client_id}}",
+                            "scope": "https://graph.microsoft.com/.default offline_access"
+                        },
+                        "headers": {
+                            "Content-type": "application/x-www-form-urlencoded",
+                            "Accept": "application/json; charset=utf-8"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.access_token",
+                            "variable": "accessToken"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.refresh_token",
+                            "variable": "refreshToken"
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value": "{{accessToken}}",
+                            "description": "Login must return a valid access token.",
+                            "expression": "value !== undefined",
+                            "failStep": true,
+                            "reportFailOnly": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stepName": "Azure Portal Refresh Token (OAUTH2)",
+            "requests": [
+                {
+                    "config": {
+                        "method": "post",
+                        "url": "https://login.microsoftonline.com/{{tentantId}}/oauth2/v2.0/token",
+                        "data": {
+                            "refresh_token": "{{refreshToken}}",
+                            "grant_type": "refresh_token",
+                            "client_secret": "{{client_secret}}",
+                            "client_id": "{{client_id}}",
+                            "scope": "https://graph.microsoft.com/.default offline_access"
+                        },
+                        "headers": {
+                            "Content-type": "application/x-www-form-urlencoded",
+                            "Accept": "application/json; charset=utf-8"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.access_token",
+                            "variable": "accessToken"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.refresh_token",
+                            "variable": "refreshToken"
+                        }
+                    ],
+                    "assertions": []
+                }
+            ]
+        },
+        {
+            "stepName": "Get Teams Channel messages",
+            "requests": [
+                {
+                    "config": {
+                        "url": "/v1.0/me/joinedTeams",
+                        "headers": {
+                            "Authorization": "Bearer {{accessToken}}"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.value[*].id",
+                            "variable": "teamId"
+                        }
+                    ],
+                    "assertions": []
+                },
+                {
+                    "config": {
+                        "url": "/v1.0/teams/{{teamId}}/channels",
+                        "headers": {
+                            "Authorization": "Bearer {{accessToken}}"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.value[*].id",
+                            "variable": "channelIndex",
+                            "index": true
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.value[{{channelIndex}}].id",
+                            "variable": "channelId"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.value[{{channelIndex}}].displayName",
+                            "variable": "channelName"
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value": "{{channelName}}",
+                            "description": "Found teams channel should have a name.",
+                            "expression": "value !== undefined",
+                            "failStep": true
+                        }
+                    ]
+                },
+                {
+                    "config": {
+                        "url": "/beta/teams/{{teamId}}/channels/{{channelId}}/messages",
+                        "headers": {
+                            "Authorization": "Bearer {{accessToken}}"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.value[*].id",
+                            "variable": "messageCount",
+                            "counter": true
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

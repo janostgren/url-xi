@@ -1,36 +1,12 @@
 {
     "testName": "Ticketmonster Order Tickets",
-    "description": "Order tickets in Ticketmonster. Setup AppDynamcics integration headers",
+    "description": "Order tickets in Ticketmonster. Setup AppDynamics integration headers",
     "variables": [
         {
             "key": "email",
             "type": "string",
             "usage": "inResponse",
             "value": "{{$faker.internet.email}}"
-        },
-        {
-            "key": "eventId",
-            "type": "number",
-            "usage": "",
-            "value": 0
-        },
-        {
-            "key": "showId",
-            "type": "number",
-            "usage": "",
-            "value": 0
-        },
-        {
-            "key": "performanceId",
-            "type": "number",
-            "usage": "",
-            "value": 0
-        },
-        {
-            "key": "ticketPriceId",
-            "type": "number",
-            "usage": "",
-            "value": 0
         },
         {
             "key": "bookingId",

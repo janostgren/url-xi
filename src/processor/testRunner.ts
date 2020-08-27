@@ -14,6 +14,7 @@ import { Api } from '../lib/api';
 import { TestResultProcessor } from './testResultProcessor';
 import { Logger } from 'log4js'
 import { apiConfig } from '../lib/api.config'
+import qs from 'qs'
 
 
 export class TestRunner extends TestBase {
@@ -222,7 +223,7 @@ export class TestRunner extends TestBase {
 
                 }
                 this._logger.debug("extractor type=%s expression=%s value=%s", extractor.type, extractor.expression, value)
-                if (value) {
+                if (value !== undefined) {
                     this._testConfig.setVariableValue(extractor.variable, value)
                 }
             } catch (error) {
@@ -283,6 +284,7 @@ export class TestRunner extends TestBase {
                     let requestResult: IRequestResult = JSON.parse("{}")
                     requestResult.duration = 0
                     requestResult.success = true
+                    let requestContentType:string= request.config?.headers['Content-type']
                     if (request.assertions && !stepResult.assertions)
                         stepResult.assertions = []
                     if (config.data) {
@@ -292,6 +294,9 @@ export class TestRunner extends TestBase {
                             let strdata = this._testConfig.replaceWithVarValue(config.data)
                             let json = helper.toJson(strdata)
                             config.data = json || strdata
+                        } else if(requestContentType === 'application/x-www-form-urlencoded'){
+                            let formData:any= this.replaceFromJSON(config.data)
+                            config.data = qs.stringify(formData)
                         }
                     }
 
