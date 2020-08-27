@@ -288,7 +288,9 @@ export class TestRunner extends TestBase {
                     let requestResult: IRequestResult = JSON.parse("{}")
                     requestResult.duration = 0
                     requestResult.success = true
-                    let requestContentType: string = request.config?.headers['Content-type']
+                    let requestContentType: string =""
+                    if( request?.config?.headers)
+                        requestContentType= request?.config?.headers['Content-type'] || ""
                     if (request.assertions && !stepResult.assertions)
                         stepResult.assertions = []
                     if (config.data) {
