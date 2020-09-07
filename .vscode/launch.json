@@ -161,6 +161,26 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "PM Convert ASM Dictionary",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/dist/pmconvert/index.js",
+            "args": [
+                "--collection",
+                "samples/pmconvert/ASM_Dictionary.postman_collection.json",
+                "--env",
+                "samples/pmconvert/ASM_Dict_Env.postman_environment.json",
+                "--output",
+                "./out"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
         }
     ]
 }

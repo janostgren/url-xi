@@ -25,7 +25,7 @@ export type ScriptScope ='before' |  'after' | 'beforeEach' | 'afterEach'
 
 export interface IScript {
     scope:ScriptScope
-    script:string[]
+    script:string[] | string
 }
 
 export interface IRequestConfig {

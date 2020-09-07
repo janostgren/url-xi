@@ -51,7 +51,7 @@
             "scripts": [
                 {
                     "scope":"before",
-                    "script":["uxs.setVar('var1', new Date())"]
+                    "script":"uxs.setVar('var1', new Date())"
 
                 },
                 {
@@ -83,7 +83,6 @@
                         {
                             "scope":"after",
                             "script":[
-                                "//var jsonData = JSON.parse(responseBody);",
                                 "var jsonData = responseData;",
                                 "var randomIdx = parseInt(Math.floor(Math.random() * jsonData.length));",
                                 "// console.info('randomIdx',randomIdx, jsonData.length)",

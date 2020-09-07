@@ -3,6 +3,7 @@ log
 test
 package-lock.json
 results
+out
 src/*
 tsconfig.json
 tsconfig.browser.json

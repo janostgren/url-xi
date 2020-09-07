@@ -253,7 +253,7 @@ export class PrePostProcessors extends TestBase implements IScriptingAPI {
     }
 
     private runBeforeScript(script: IScript) {
-        let jsEval: string = script.script.join("\n")
+        let jsEval: string = Array.isArray(script.script) ? script.script.join("\n"):script.script
         let uxs: IScriptingAPI = this
         try {
             this._logger.debug("Before script: scope=%s , eval=%s", script.scope, jsEval)
@@ -267,7 +267,7 @@ export class PrePostProcessors extends TestBase implements IScriptingAPI {
         }
     }
     private runAfterScript(script: IScript,response?:AxiosResponse) {
-        let jsEval: string = script.script.join("\n")
+        let jsEval: string = Array.isArray(script.script) ? script.script.join("\n"):script.script
         let uxs: IScriptingAPI = this
         let responseBody= response && response.data ? response.data: null
         let responseData= response && response.data ? response.data: null

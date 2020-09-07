@@ -104,7 +104,7 @@ async function run_cli() {
     let converter:PMConverter = new PMConverter(debug)
     let exitCode: number = 0
     try {
-        await converter.initFromFile(collection_file)
+        await converter.initFromFile(collection_file,env_file)
         converter.convert()
 
     } catch (error) {

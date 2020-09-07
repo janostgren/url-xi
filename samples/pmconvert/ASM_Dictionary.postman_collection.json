@@ -1,0 +1,220 @@
+{
+	"info": {
+		"_postman_id": "ce57104c-3919-4820-9e37-48011a1a2dd6",
+		"name": "ASM Dictionary",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Dictionary",
+			"item": [
+				{
+					"name": "Post Dictionary DemoDict",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "bba181ec-a36d-465b-9cdd-e4b73ac2f5fd",
+								"exec": [
+									"pm.test('Check status code', () => {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 409])",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "585fed10-ca86-487d-aa4a-afe8e8ced025",
+								"exec": [
+									"const d=new Date()",
+									"pm.collectionVariables.set(\"key3\",\"date:\"+d)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"dictionary_key\": \"{{dictionaryName}}\",\n \n  \"dictionary\": {\n    \"key1\": \"sample value 1\",\n    \"key2\": \"sample value 2\",\n    \"key3\": \"{{key3}}\"\n  },\n  \"description\": \"The demo dictionary\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/{{apiVersion}}/scenarios/proxysniffer/dictionaries",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"{{apiVersion}}",
+								"scenarios",
+								"proxysniffer",
+								"dictionaries"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "GetUpdate Dictionary",
+			"item": [
+				{
+					"name": "Get Dictionary DemoDict",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiURL}}/{{apiVersion}}//scenarios/proxysniffer/dictionaries/{{dictionaryName}}",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"{{apiVersion}}",
+								"",
+								"scenarios",
+								"proxysniffer",
+								"dictionaries",
+								"{{dictionaryName}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put Dictionary DemoDict",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \n  \"dictionary\": {\n    \"key1\": \"sample value 1\",\n    \"key2\": \"sample value 2\",\n    \"key3\": \"{{key3}}\"\n  },\n  \"description\": \"The demo dictionary\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/{{apiVersion}}//scenarios/proxysniffer/dictionaries/{{dictionaryName}}",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"{{apiVersion}}",
+								"",
+								"scenarios",
+								"proxysniffer",
+								"dictionaries",
+								"{{dictionaryName}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "442b74a8-9fa4-4ee6-9fb1-21822d7c0589",
+						"type": "text/javascript",
+						"exec": [
+							"const d=new Date()",
+							"pm.collectionVariables.set(\"key3\",\"date:\"+d)",
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "fc12bf25-eb35-47ba-b5f8-d6df20e764ca",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Check status code', () => {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200])",
+							"})"
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "key",
+				"value": "auth_ticket",
+				"type": "string"
+			},
+			{
+				"key": "value",
+				"value": "9619A546-86E1-46B0-B003-7485D259A964",
+				"type": "string"
+			},
+			{
+				"key": "in",
+				"value": "query",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "0ee8eafd-0306-46b1-b26b-377d8a01211e",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "f5d81e95-2896-4bd3-9b46-82c6ed36ddf6",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "b08aad43-fb99-4421-821a-cf280e2903b8",
+			"key": "dictionaryName",
+			"value": "DemoDict2"
+		},
+		{
+			"id": "2d5c5fb1-bbdc-4604-8c83-3b3050c3c0c8",
+			"key": "apiURL",
+			"value": "https://api-wpm2.apicasystem.com"
+		},
+		{
+			"id": "91233afd-7b3e-438b-a4b5-f345a814fcdd",
+			"key": "key3",
+			"value": "key3"
+		},
+		{
+			"id": "7b644e28-6b61-490a-a761-fea811281509",
+			"key": "apiVersion",
+			"value": "v3"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
