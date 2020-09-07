@@ -118,6 +118,12 @@ export class TestConfig extends TestBase {
         }
     }
 
+    public getVariableValue(key: string) {
+        let v = this._varMap.get(key)
+        return v ? v.value:null
+    }
+
+
     public replaceWithVarValue(str: string) {
         let vars: Map<string, IVariable> = this._varMap
         let ret: any = ""

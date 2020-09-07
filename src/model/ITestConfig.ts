@@ -21,6 +21,13 @@ export interface ITransformer {
     to:string 
 } 
 
+export type ScriptScope ='before' |  'after' | 'beforeEach' | 'afterEach'
+
+export interface IScript {
+    scope:ScriptScope
+    script:string[]
+}
+
 export interface IRequestConfig {
     
     method?: Method,
@@ -36,6 +43,7 @@ export interface IRequest {
     expectedStatus?:number[]
     assertions?:IAssertion[]
     transformers?:ITransformer[]
+    scripts?:IScript[]
     notSaveData?:boolean
     disabled?:boolean
 }
@@ -69,6 +77,7 @@ export interface ITestStep extends IBaseConfigItem{
     requests: IRequest[]
     iterator?:IStepIterator
     disabled?:boolean
+    scripts?:IScript[]
 }
 
 export type VariableType = 'string' | 'number' | 'array'

@@ -1,28 +1,26 @@
-import { ResultConfig, ITestStep, IExtractor, IRequest, IRequestConfig, IStepIterator, IAssertion, ITransformer } from '../model/ITestConfig'
+import { ResultConfig, ITestStep, IRequest, IRequestConfig, IStepIterator} from '../model/ITestConfig'
 import { IRequestResult, IStepResult, ITestResults, IAssertionResult } from '../model/ITestResult'
 import { TestConfig } from '../config/testConfig'
-import Axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
+import { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
+import {PrePostProcessors} from './prePostProcessors'
+
 import { TestBase } from '../lib/testbase'
 
 import * as helper from '../lib/helpers'
 
-import { JSONPath } from 'jsonpath-plus';
-import xpath from 'xpath';
-import xmldom from 'xmldom'
-
 import { Api } from '../lib/api';
-import { TestResultProcessor } from './testResultProcessor';
-import { Logger } from 'log4js'
-import { apiConfig } from '../lib/api.config'
+
 import qs from 'qs'
 
 
 export class TestRunner extends TestBase {
 
     private _testConfig: TestConfig
+    private _prePostProcessors: PrePostProcessors
     constructor(config: TestConfig, debug: boolean = false) {
         super(debug, "TestRunner")
         this._testConfig = config
+        this._prePostProcessors = new PrePostProcessors(config,debug)
     }
 
     public setConfigValues(config: IRequestConfig) {
@@ -43,197 +41,10 @@ export class TestRunner extends TestBase {
         return ret
     }
 
-    private transform(transformers: ITransformer[]) {
-        transformers.forEach(transformer => {
-            let vars = transformer.target.split(",")
-            let value: string = this._testConfig.replaceWithVarValue(transformer.source)
-            switch (transformer.type) {
-                case 'extract':
-                    let regExp: RegExp = new RegExp(transformer.from)
-                    let results = regExp.exec(value)
-                    if (results) {
-                        if (results.length === 1) {
-                            if (vars.length > 0)
-                                this._testConfig.setVariableValue(vars[0], results[0])
-                        }
-                        else {
-                            for (let idx: number = 1; idx < results.length; idx++) {
-                                if (vars.length >= idx) {
-                                    this._testConfig.setVariableValue(vars[idx - 1], results[idx])
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case 'replace':
-                    if (transformer.to) {
-                        let newValue: string = value.replace(transformer.from, transformer.to)
-                        for (let idx: number = 0; idx < vars.length; idx++) {
-                            this._testConfig.setVariableValue(vars[idx], newValue)
-                        }
-                    }
-            }
-
-        });
-    }
-
-    private validate(assertions: IAssertion[]) {
-        let results: IAssertionResult[] = []
-        assertions.forEach(assertion => {
-            let ok: boolean = false
-            let description = this._testConfig.replaceWithVarValue(assertion.description)
-            let value: any = ""
-            if (assertion.value)
-                value = this._testConfig.replaceWithVarValue(assertion.value)
-            let result: IAssertionResult = { "description": description, "success": false, "value": value, "expression": "", "failStep": assertion?.failStep || false }
-            switch (assertion.type) {
-                case 'javaScript':
-                    try {
-                        let s: string = this._testConfig.replaceWithVarValue(assertion.expression)
-                        result.expression = s
-                        ok = eval(s) ? true : false
-                    }
-                    catch (error) {
-
-                    }
-                    break;
-                case 'regexp':
-                    try {
-                        let regexp = new RegExp(assertion.expression)
-                        result.expression = assertion.expression
-                        ok = regexp.test(value)
-                    }
-                    catch (error) {
-
-                    }
-                    break;
-                case 'value':
-                    result.expression = assertion.expression
-                    ok = (value == result.expression)
-                    break;
-            }
-            this._logger.debug("assertion success=%s fail step= %s, value= [%s] expression= [%s], desc= %s", result.success, result.failStep, result.value, result.expression, result.description)
-            result.success = ok
-
-            result.failStep = (assertion?.failStep || false) && !ok
-            if (!assertion?.reportFailOnly || !ok)
-                results.push(result)
-        })
-        return results
-    }
-    private extractValues(extractors: IExtractor[], response: AxiosResponse) {
-
-        let value
-        extractors.forEach(elem => {
-            value = undefined
-            try {
-                let extractor: IExtractor = elem
-
-                let expression: string = this._testConfig.replaceWithVarValue(extractor.expression)
-
-
-                switch (extractor.type) {
-                    case "jsonpath":
-                        if (response.data) {
-                            //let jp = jsonPath.query(response.data, extractor.expression)
-                            let jp = JSONPath({ path: expression, json: response.data })
-                            if (jp) {
-                                if (extractor.counter)
-                                    value = jp.length
-                                else if (extractor.index)
-                                    value = Math.floor(Math.random() * jp.length)
-                                else if (extractor.array)
-                                    value = jp
-                                else
-                                    value = jp[Math.floor(Math.random() * jp.length)];
-                            }
-                        }
-                        break
-                    case "xpath":
-                        if (response.data) {
-                            let p = new xmldom.DOMParser()
-                            let xml = p.parseFromString(response.data)
-                            let nodes = xpath.select(expression, xml)
-                            if (nodes) {
-                                if (extractor.counter)
-                                    value = nodes.length
-                                else if (extractor.index)
-                                    value = Math.floor(Math.random() * nodes.length)
-                                else if (nodes.length) {
-                                    if (Array.isArray(nodes)) {
-                                        if (extractor.array) {
-                                            let a: string[] = [];
-                                            nodes.forEach(node => {
-                                                let x: any = node
-                                                a.push(x.nodeValue || x.data)
-
-                                            }
-                                            )
-                                            value = a
-                                        }
-                                        else {
-                                            let ne: any = nodes[Math.floor(Math.random() * nodes.length)];
-                                            value = ne.nodeValue || ne.data
-                                        }
-                                    }
-                                    else {
-                                        value = nodes
-                                    }
-                                }
-                            }
-                        }
-                        break
-                    case "regexp":
-                        if (response.data) {
-                            let regexp: RegExp = new RegExp(expression, "gm");
-                            let arr = [...response.data.matchAll(regexp)];
-                            if (arr) {
-                                if (extractor.counter)
-                                    value = arr.length
-                                else if (extractor.index)
-                                    value = Math.floor(Math.random() * arr.length)
-                                else if (arr.length > 0) {
-                                    if (extractor.array) {
-                                        let a: string[] = []
-                                        arr.forEach(elem => {
-                                            a.push(elem.length > 1 ? elem.slice(1).join("") : elem[0])
-                                        }
-                                        )
-                                        value = a
-                                    }
-                                    else {
-                                        let elem = arr[Math.floor(Math.random() * arr.length)];
-                                        if (elem.length > 1)
-                                            value = elem.slice(1).join("")
-                                        else
-                                            value = elem[0]
-                                    }
-                                }
-                            }
-                        }
-                        break
-                    case "header":
-                        let headers = response?.headers
-                        if (headers)
-                            value = headers[
-                                expression]
-                        break
-                    case "cookie":
-                        break
-
-                }
-                this._logger.debug("extractor type=%s expression=%s value=%s", extractor.type, extractor.expression, value)
-                if (value !== undefined) {
-                    this._testConfig.setVariableValue(extractor.variable, value)
-                }
-            } catch (error) {
-                this._logger.error(error)
-            }
-        })
-    }
-
+  
     private async runTestStep(step: ITestStep, api: Api, nodata: boolean, idleBetweenRequest: number) {
         let stepResult: IStepResult = JSON.parse("{}")
+        this._prePostProcessors.runBeforeScripts(step)
         stepResult.stepName = step.stepName
         stepResult.success = false
         stepResult.duration = 0
@@ -305,6 +116,7 @@ export class TestRunner extends TestBase {
                             config.data = qs.stringify(formData)
                         }
                     }
+                    this._prePostProcessors.runBeforeScripts(step,request)
 
                     let response: AxiosResponse = JSON.parse("{}");
                     let stepConfig: AxiosRequestConfig = this.setConfigValues(config)
@@ -348,13 +160,13 @@ export class TestRunner extends TestBase {
                     }
                     if (response.status) {
                         if (request.extractors) {
-                            this.extractValues(request.extractors, response)
+                            this._prePostProcessors.extractValues(request.extractors, response)
                         }
                         if (request.transformers) {
-                            this.transform(request.transformers)
+                            this._prePostProcessors.transform(request.transformers)
                         }
                         if (!foundError && request.assertions) {
-                            let assres: IAssertionResult[] = this.validate(request.assertions)
+                            let assres: IAssertionResult[] = this._prePostProcessors.validate(request.assertions)
                             if (assres.length) {
                                 if (!stepResult.assertions)
                                     stepResult.assertions = []
@@ -375,6 +187,7 @@ export class TestRunner extends TestBase {
                                 foundError = !poll && (failStep !== undefined)
                             }
                         }
+                        this._prePostProcessors.runAfterScripts(step,request,response)
                     }
                     if (response?.config?.headers)
                         requestResult.config.headers = response?.config?.headers
@@ -423,6 +236,7 @@ export class TestRunner extends TestBase {
             this._logger.error(error)
         }
         stepResult.endTime = Date.now()
+        this._prePostProcessors.runAfterScripts(step)
         return stepResult
     }
 
