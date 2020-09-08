@@ -60,6 +60,22 @@ export const testCaseSchema = {
             "disabled": {
               "type": "boolean"
             },
+            "iterator": {
+              "type": "object",
+              "properties": {
+                "varName": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "any"
+                },
+                "waitForValidResponse": {
+                  "type": "boolean"
+                }
+               
+              },
+              "required": ["varName","value"]
+            },
             "requests": {
               "type": "array",
               "minItems": 1,
@@ -86,7 +102,7 @@ export const testCaseSchema = {
                     },
                     "expectedStatus": {
                       "minItems": 1,
-                      "type": "array",
+                      "type": "array" || "number" || "string",
                       "items": {
                         "type": "number"
                       }

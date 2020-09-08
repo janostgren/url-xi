@@ -1,8 +1,8 @@
-import { ResultConfig, ITestStep, IRequest, IRequestConfig, IStepIterator} from '../model/ITestConfig'
+import { ResultConfig, ITestStep, IRequest, IRequestConfig, IStepIterator } from '../model/ITestConfig'
 import { IRequestResult, IStepResult, ITestResults, IAssertionResult } from '../model/ITestResult'
 import { TestConfig } from '../config/testConfig'
 import { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
-import {PrePostProcessors} from './prePostProcessors'
+import { PrePostProcessors } from './prePostProcessors'
 
 import { TestBase } from '../lib/testbase'
 
@@ -20,7 +20,7 @@ export class TestRunner extends TestBase {
     constructor(config: TestConfig, debug: boolean = false) {
         super(debug, "TestRunner")
         this._testConfig = config
-        this._prePostProcessors = new PrePostProcessors(config,debug)
+        this._prePostProcessors = new PrePostProcessors(config, debug)
     }
 
     public setConfigValues(config: IRequestConfig) {
@@ -41,7 +41,7 @@ export class TestRunner extends TestBase {
         return ret
     }
 
-  
+
     private async runTestStep(step: ITestStep, api: Api, nodata: boolean, idleBetweenRequest: number) {
         let stepResult: IStepResult = JSON.parse("{}")
         this._prePostProcessors.runBeforeScripts(step)
@@ -99,9 +99,9 @@ export class TestRunner extends TestBase {
                     let requestResult: IRequestResult = JSON.parse("{}")
                     requestResult.duration = 0
                     requestResult.success = true
-                    let requestContentType: string =""
-                    if( request?.config?.headers)
-                        requestContentType= request?.config?.headers['Content-type'] || request?.config?.headers['Content-Type'] ||""
+                    let requestContentType: string = ""
+                    if (request?.config?.headers)
+                        requestContentType = request?.config?.headers['Content-type'] || request?.config?.headers['Content-Type'] || ""
                     if (request.assertions && !stepResult.assertions)
                         stepResult.assertions = []
                     if (config.data) {
@@ -116,7 +116,7 @@ export class TestRunner extends TestBase {
                             config.data = qs.stringify(formData)
                         }
                     }
-                    this._prePostProcessors.runBeforeScripts(step,request)
+                    this._prePostProcessors.runBeforeScripts(step, request)
 
                     let response: AxiosResponse = JSON.parse("{}");
                     let stepConfig: AxiosRequestConfig = this.setConfigValues(config)
@@ -147,13 +147,15 @@ export class TestRunner extends TestBase {
 
                     };
                     if (request.expectedStatus) {
-
                         let statusOK: boolean = true
-                        statusOK = request.expectedStatus.find(status => {
-                            return status === response.status
+                        if (Array.isArray(request.expectedStatus)) {
+                            statusOK = request.expectedStatus.find(status => {
+                                return status === response.status
+                            }
+                            ) != undefined
+                        } else if (!isNaN(request.expectedStatus)) {
+                            statusOK = (response.status === request.expectedStatus)
                         }
-
-                        ) != undefined
                         foundError = (!statusOK)
                     } else {
                         foundError = (response.status < 200 || response.status > 299)
@@ -187,7 +189,7 @@ export class TestRunner extends TestBase {
                                 foundError = !poll && (failStep !== undefined)
                             }
                         }
-                        this._prePostProcessors.runAfterScripts(step,request,response)
+                        this._prePostProcessors.runAfterScripts(step, request, response)
                     }
                     if (response?.config?.headers)
                         requestResult.config.headers = response?.config?.headers

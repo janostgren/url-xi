@@ -3,9 +3,7 @@ import { ITestConfigData, IVariable, IRequestConfig, ITestStep, IRequest, IScrip
 import fs from 'fs';
 import util from 'util';
 import path from 'path'
-
 import { IPMCollection, Variable, Auth, URLObject, Items, RequestObject, Header, Body, URLEncodedParameter, Event, Script } from './IPMCollection'
-import { helpers } from 'faker';
 
 export class PMConverter extends TestBase {
 
@@ -75,7 +73,6 @@ export class PMConverter extends TestBase {
         line = line.replace(/postman.setEnvironmentVariable/gm, "uxs.setVar")
         line = line.replace(/postman.getEnvironmentVariable/gm, "uxs.getVar")
         return line
-
     }
 
     private convertScripts(events: Event[], step: ITestStep, request?: IRequest) {
@@ -94,16 +91,8 @@ export class PMConverter extends TestBase {
                 let script: Script = event.script as any;
                 let convertedCode
                 if (Array.isArray(script.exec)) {
-                    let t=this.convertScriptLine(script.exec.join('\n'))
-                    convertedCode=t.split('\n')
-                    /*
-                    convertedCode = []
-                    script.exec.forEach(line => {
-                        convertedCode.push(this.convertScriptLine(line))
-                    })
-                    */
-
-
+                    let t = this.convertScriptLine(script.exec.join('\n'))
+                    convertedCode = t.split('\n')
                 } else {
                     convertedCode = this.convertScriptLine(script?.exec as any)
                 }
@@ -149,9 +138,7 @@ export class PMConverter extends TestBase {
                         case 'in':
                             _in = apiKey.value
                             break;
-
                     }
-
                 }
                 )
                 if (_in === 'query') {
@@ -182,7 +169,6 @@ export class PMConverter extends TestBase {
                 )
                 config.auth = { "username": username, "password": password }
                 break;
-
         }
         return config
     }
@@ -245,7 +231,6 @@ export class PMConverter extends TestBase {
                             let key: any = param.key
                             request.config.params[key] = param.value
                         }
-
                     })
                 }
             }
@@ -294,8 +279,6 @@ export class PMConverter extends TestBase {
                             break
                     }
                 }
-
-
             }
         }
         if (item.event) {
@@ -339,15 +322,12 @@ export class PMConverter extends TestBase {
             let description: any = this.pmCollection.info?.description || ""
             testConfig.description = description
         }
-
-
         this.pmCollection.variable?.forEach(v => {
             this._logger.debug("Reading variable [%s] value=%s from collection", v.key || v.name, v.value || "")
             if (!v.disabled) {
                 let variable: IVariable = this.toIVariable(v)
                 varMap.set(variable.key, variable)
             }
-
         }
         )
         this.envVariables.forEach(v => {
@@ -356,34 +336,25 @@ export class PMConverter extends TestBase {
                 let variable: IVariable = this.toIVariable(v)
                 varMap.set(variable.key, variable)
             }
-
         }
         )
-
         testConfig.variables = []
         for (const variable of varMap.values()) {
             testConfig.variables.push(variable)
-
         }
         let config: IRequestConfig = {} as any;
         if (this.pmCollection.auth) {
-
             config = this.convertAuth(this.pmCollection.auth, config)
             if (!config.params)
                 testConfig.config = config
         }
-
         testConfig.steps = []
         this.pmCollection.item?.forEach(item => {
-
             this._logger.debug("Reading Item [%s]", item.name, item.description)
-
-
             let step: ITestStep = this.convertStep(item, config.params)
             testConfig.steps.push(step)
         }
         )
         return testConfig
     }
-
 }

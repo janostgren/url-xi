@@ -191,7 +191,7 @@
             "ignoreDuration": true,
             "requests": [
                 {
-                    "expectedStatus": [401],
+                    "expectedStatus": 401,
                     "config": {
                         "method": "get",
                         "url": "/basic-auth/foo/error",

@@ -8,8 +8,22 @@
     "clear": "rm ./log/*;rm ./results/*"
   },
   "bin": {
-    "url-xi": "./dist/cli/index.js"
+    "url-xi": "./dist/cli/index.js",
+    "pmconvert": "./dist/pmconvert/index.js"
   },
+  "keywords": ["testing",
+    "monitoring",
+    "rest","REST",
+    "rest client",
+    "api","API",
+    "ci",
+    "integration",
+    "synthetics",
+    "url",
+    "url-xi",
+    "http","https",
+    "axois"
+  ],
   "author": "Jan Ostgren",
   "license": "ISC",
   "dependencies": {
