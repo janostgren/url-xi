@@ -1,6 +1,6 @@
 {
   "name": "url-xi",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "URL Check for integrations",
   "main": "dist/cli/index.js",
   "scripts": {
@@ -11,17 +11,21 @@
     "url-xi": "./dist/cli/index.js",
     "pmconvert": "./dist/pmconvert/index.js"
   },
-  "keywords": ["testing",
+  "keywords": [
+    "testing",
     "monitoring",
-    "rest","REST",
+    "rest",
+    "REST",
     "rest client",
-    "api","API",
+    "api",
+    "API",
     "ci",
     "integration",
     "synthetics",
     "url",
     "url-xi",
-    "http","https",
+    "http",
+    "https",
     "axois"
   ],
   "author": "Jan Ostgren",
