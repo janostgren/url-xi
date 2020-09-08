@@ -101,7 +101,7 @@ export class TestRunner extends TestBase {
                     requestResult.success = true
                     let requestContentType: string =""
                     if( request?.config?.headers)
-                        requestContentType= request?.config?.headers['Content-type'] || ""
+                        requestContentType= request?.config?.headers['Content-type'] || request?.config?.headers['Content-Type'] ||""
                     if (request.assertions && !stepResult.assertions)
                         stepResult.assertions = []
                     if (config.data) {

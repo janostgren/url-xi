@@ -8,5 +8,6 @@ src/*
 tsconfig.json
 tsconfig.browser.json
 samples/internal
+samples/pmconvert
 .vscode
 .git

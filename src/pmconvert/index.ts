@@ -40,7 +40,7 @@ program.version(version);
 
 program
     .requiredOption('-c, --collection <file>', 'pm collection file')
-    .requiredOption('-o, --output <dir>', 'output dir')
+    .option('-o, --output <dir>', 'output dir')
     .option('-e, --env <file>', 'environment file')
     .option('-d, --debug', 'output extra debugging')
 
@@ -105,7 +105,10 @@ async function run_cli() {
     let exitCode: number = 0
     try {
         await converter.initFromFile(collection_file,env_file)
-        converter.convert()
+        let test=converter.convert()
+        if(outDir) {
+            await converter.save(test,outDir)
+        }
 
     } catch (error) {
         logger.error(error)
