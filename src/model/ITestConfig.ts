@@ -90,6 +90,7 @@ export interface IVariable {
     value: any,
     validation?:string
     unit?: string
+    hideValue?:boolean
 }
 
 export interface ITestConfigData extends IBaseConfigItem{

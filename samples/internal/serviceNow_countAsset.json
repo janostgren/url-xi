@@ -1,0 +1,134 @@
+{
+    "testName": "ServiceNow count assets",
+    "description": "Count an asset in serviceNow. I.e. number of open incidents for a specific business service",
+    "variables": [
+        {
+            "key": "username",
+            "type": "string",
+            "usage": "input",
+            "value": "Apica.api",
+            "hideValue": true
+        },
+        {
+            "key": "password",
+            "type": "string",
+            "usage": "input",
+            "value": "Apica-api",
+            "hideValue": true
+        },
+        {
+            "key": "client_secret",
+            "type": "string",
+            "usage": "input",
+            "value": "?es`BNI@wh",
+            "hideValue": true
+        },
+       
+        {
+            "key": "client_id",
+            "type": "string",
+            "usage": "input",
+            "value": "15a2cf0f26ebb300f21af712c78b4e59",
+            "hideValue": true
+        },
+        {
+            "key": "table",
+            "type": "string",
+            "usage": "input",
+            "value": "incident"
+            
+        },
+        {
+            "key": "businessService",
+            "type": "string",
+            "usage": "input",
+            "value": "TicketMonster"
+        },
+       
+        {
+            "key": "assetCount",
+            "type": "number",
+            "usage": "returnValue"
+        }
+    ],
+    "baseURL": "https://ven03142.service-now.com",
+    "steps": [
+        {
+            "stepName": "Service Now Login (OAUTH2)",
+            "requests": [
+                {
+                    "notSaveData":true,
+                    "config": {
+                        "method": "post",
+                        "url": "/oauth_token.do",
+                     
+                        "data": {
+                            "username": "{{username}}",
+                            "password": "{{password}}",
+                            "grant_type": "password",
+                            "client_secret": "{{client_secret}}",
+                            "client_id": "{{client_id}}"
+                           
+                        },
+                        "headers": {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "Accept": "application/json; charset=utf-8"
+                        }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.access_token",
+                            "variable": "accessToken"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.refresh_token",
+                            "variable": "refreshToken"
+                        }
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value": "{{accessToken}}",
+                            "description": "Login must return a valid access token.",
+                            "expression": "value !== undefined",
+                            "failStep": true,
+                            "reportFailOnly": true
+                        }
+                    ]
+                }
+            ]
+        },
+       
+        {
+            "stepName": "Get Assets",
+            "disabled":false,
+            "requests": [
+                {
+                    "notSaveData":true,
+                    "config": {
+                        "url": "api/now/table/{{table}}",
+                        "headers": {
+                            "Authorization": "Bearer {{accessToken}}"
+                        },
+                        "params": {
+                            "sysparm_query": "state<6",
+                            "business_service": "{{businessService}}"
+                          }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.result[*]",
+                            "variable": "assetCount",
+                            "counter":true
+                        }
+                    ],
+                    "assertions": []
+                }
+                
+            ]
+        }
+    ]
+}

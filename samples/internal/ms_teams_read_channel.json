@@ -12,13 +12,15 @@
             "key": "password",
             "type": "string",
             "usage": "input",
-            "value": "Cool..4AA"
+            "value": "Cool..4AA",
+            "hideValue": true
         },
         {
             "key": "client_secret",
             "type": "string",
             "usage": "input",
-            "value": "5xMrPu=BJMEC.]?2iPmLXylyzct75+[+"
+            "value": "5xMrPu=BJMEC.]?2iPmLXylyzct75+[+",
+            "hideValue": true
         },
         {
             "key": "tentantId",
@@ -30,7 +32,8 @@
             "key": "client_id",
             "type": "string",
             "usage": "input",
-            "value": "61ff0b43-7bde-44f6-a371-849dcae23b10"
+            "value": "61ff0b43-7bde-44f6-a371-849dcae23b10",
+            "hideValue": true
         },
         {
             "key": "channelName",

@@ -7,6 +7,7 @@ import * as helper from '../lib/helpers'
 import { TestBase } from '../lib/testbase'
 import { IVariable } from '../model/ITestConfig'
 import { IStepResult, ITestResults } from '../model/ITestResult'
+import { VariableType } from '../pmconvert/IPMCollection'
 
 export class TestResultProcessor extends TestBase {
 
@@ -20,6 +21,13 @@ export class TestResultProcessor extends TestBase {
 
     public async saveResults(results: ITestResults, result_dir: string, resultName?: string) {
 
+        results.variables?.forEach(variable => {
+            if (variable.hideValue)
+                variable.value = "*"
+
+        }
+
+        )
         resultName = this._createResultName(resultName)
         let resultFile = path.resolve(result_dir, resultName + ".json")
         let writeFile = util.promisify(fs.writeFile);
@@ -75,7 +83,8 @@ export class TestResultProcessor extends TestBase {
             console.info(colors.cyan.bold("----- [Variables values] -----"))
             for (let idx: number = 0; idx < results.variables.length; idx++) {
                 let variable: IVariable = results.variables[idx]
-                console.info("\tname=%s , value=%s %s, usage=%s", variable.key, variable.value, variable.unit || '', variable.usage || "internal")
+                console.info("\tname=%s , value=%s %s, usage=%s", variable.key,
+                    variable.hideValue ? "*" : variable.value, variable.unit || '', variable.usage || "internal")
             }
             console.info("")
         }

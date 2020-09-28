@@ -27,6 +27,9 @@ export const testCaseSchema = {
             },
             "value": {
 
+            },
+            "hideValue": {
+              "type": "boolean"
             }
           },
           "required": [
