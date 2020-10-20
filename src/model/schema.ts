@@ -19,11 +19,11 @@ export const testCaseSchema = {
             },
             "type": {
               "type": "string",
-              "enum": ["number", "string", "array"]
+              "enum": ["number", "string", "url","array"]
             },
             "usage": {
               "type": "string",
-              "enum": ["returnValue", "info", "inResponse", "input", ""]
+              "enum": ["returnValue", "info", "inResponse", "input","urlLink" ,""]
             },
             "value": {
 

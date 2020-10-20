@@ -270,14 +270,13 @@ export class TestRunner extends TestBase {
             let errors: any = []
             this._testConfig.configData.variables.forEach(variable => {
                 switch (variable.usage) {
-                    case 'inResponse':
-                    case 'returnValue':
+
                     case 'input':
                         let value = inpMap.get(variable.key) || process.env["url_xi_" + variable.key] || variable.value
                         if (variable.type === 'number' && value !== undefined && !isNaN(value))
                             value = Number(value)
                         variable.value = value
-                        results.variables?.push(variable)
+                        
                         if (variable.validation !== undefined) {
                             try {
                                 let ok: boolean = eval(variable.validation) ? true : false
@@ -293,6 +292,10 @@ export class TestRunner extends TestBase {
 
                             }
                         }
+                    case 'inResponse':
+                    case 'returnValue':
+                    case 'urlLink' :   
+                        results.variables?.push(variable)
                 }
 
             })

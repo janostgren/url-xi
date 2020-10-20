@@ -80,8 +80,8 @@ export interface ITestStep extends IBaseConfigItem{
     scripts?:IScript[]
 }
 
-export type VariableType = 'string' | 'number' | 'array'
-export type VariableUsage = 'returnValue' | 'inResponse' | 'info' | 'input'| ''
+export type VariableType = 'string' | 'number' | 'array' | 'url'
+export type VariableUsage = 'returnValue' | 'inResponse' | 'info' | 'input'|  'urlLink'|''
 
 export interface IVariable {
     key: string,

@@ -1,0 +1,91 @@
+{
+    "testName": "Run a netrounds monitor",
+    "description": "Run a netFRounds monitor and return SLA",
+    "variables": [
+        {
+            "key": "account",
+            "type": "string",
+            "usage": "input",
+            "value": "apica"
+        },
+        {
+            "key": "monitorId",
+            "type": "string",
+            "usage": "input",
+            "value": "104390"
+        },
+        
+       
+        {
+            "key": "api_token",
+            "type": "string",
+            "usage": "input",
+            "value": "JSkhpymrrmouGqqNmBovDohTixupWTilFd1Ch3eu",
+            "hideValue": true
+        },
+        {
+            "key": "report_url",
+            "type": "url",
+            "usage": "urlLink"
+            
+        },
+        {
+            "key": "gui_url",
+            "type": "url",
+            "usage": "urlLink"
+            
+        },
+       
+        {
+            "key": "sla",
+            "type": "number",
+            "usage": "returnValue"
+        }
+    ],
+    "baseURL": "https://ncc.test.netrounds.com",
+    "steps": [
+       
+        {
+            "stepName": "Get Report",
+            "disabled":false,
+            "requests": [
+                {
+                   
+                    "config": {
+                        "url": "/rest/accounts/{{account}}/monitors/{{monitorId}}",
+                        "headers": {
+                            "API-Token": "{{api_token}}"
+                        },
+                        "params": {
+                            "with_detailed_metrics": "false",
+                            "with_metrics_avg": "true",
+                            "with_other_results": "false",
+                            "start": "2020-03-13T10:47:00.0Z",
+                            "end": "2020-03-14T10:47:00.0Z"
+                            
+                          }
+                    },
+                    "extractors": [
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.gui_url",
+                            "variable": "gui_url"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.report_url",
+                            "variable": "report_url"
+                        },
+                        {
+                            "type": "jsonpath",
+                            "expression": "$.sla[0].sla",
+                            "variable": "sla"
+                        }
+                    ],
+                    "assertions": []
+                }
+                
+            ]
+        }
+    ]
+}

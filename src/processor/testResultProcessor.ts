@@ -83,8 +83,8 @@ export class TestResultProcessor extends TestBase {
             console.info(colors.cyan.bold("----- [Variables values] -----"))
             for (let idx: number = 0; idx < results.variables.length; idx++) {
                 let variable: IVariable = results.variables[idx]
-                console.info("\tname=%s , value=%s %s, usage=%s", variable.key,
-                    variable.hideValue ? "*" : variable.value, variable.unit || '', variable.usage || "internal")
+                console.info("\tname=%s [%s], value=%s %s", variable.key,variable.usage || "internal",
+                    variable.hideValue ? "*" : variable.value, variable.unit || '')
             }
             console.info("")
         }
