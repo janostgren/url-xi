@@ -167,6 +167,7 @@ export class TestRunner extends TestBase {
                         if (request.transformers) {
                             this._prePostProcessors.transform(request.transformers)
                         }
+                        this._prePostProcessors.runAfterScripts(step, request, response)
                         if (!foundError && request.assertions) {
                             let assres: IAssertionResult[] = this._prePostProcessors.validate(request.assertions)
                             if (assres.length) {
@@ -189,7 +190,7 @@ export class TestRunner extends TestBase {
                                 foundError = !poll && (failStep !== undefined)
                             }
                         }
-                        this._prePostProcessors.runAfterScripts(step, request, response)
+                        
                     }
                     if (response?.config?.headers)
                         requestResult.config.headers = response?.config?.headers

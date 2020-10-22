@@ -1,0 +1,218 @@
+{
+    "testName": "Run ASM Checks by Tag",
+    "description": "Run ASM checks with tag value and wait for response",
+    "variables": [
+        {
+            "key": "auth_ticket",
+            "type": "string",
+            "usage": "input",
+            "value": "EC0210F5-71E1-4BAD-A8DD-5D14C5DC32BC"
+        },
+        {
+            "key": "tagName",
+            "type": "string",
+            "usage": "input",
+            "value": "CI_CD_Pipeline"
+        },
+        {
+            "key": "tagValue",
+            "type": "string",
+            "usage": "input",
+            "value": "TM_2_Test_Pipe"
+        },
+        {
+            "key": "percentSuccess",
+            "type": "number",
+            "usage": "returnValue",
+            "value": 0
+        },
+        {
+            "key": "requestIdleTime",
+            "type": "number",
+            "usage": "input",
+            "value": 15000,
+            "validation": "value > 999 && value <= 20000"
+        },
+        {
+            "key": "pollCount",
+            "type": "number",
+            "usage": "input",
+            "value": 12,
+            "validation": "value > 0 && value <51"
+        },
+        {
+            "key": "max_ts_utc",
+            "type": "string",
+            "usage": "inResponse",
+            "value": ""
+            
+        },
+        {
+            "key": "min_ts_utc",
+            "type": "string",
+            "usage": "inResponse",
+            "value": ""
+            
+        }
+    ],
+    "baseURL": "https://api-wpm2.apicasystem.com",
+    "steps": [
+        {
+            "stepName": "Get Checks info",
+            "requests": [
+                {
+                    "config": {
+                        "url": "/v3/Checks",
+                        "params": {
+                            "auth_ticket": "{{auth_ticket}}",
+                            "include_tag" : "{{tagName}}~{{tagValue}}",
+                            "enabled":"true"
+                          }
+                       
+                    },
+                    "extractors": [
+                        {
+
+                            "type": "jsonpath",
+                            "expression": "$[*].timestamp_utc",
+                            "variable": "timestamp_utc_arr",
+                            "array":true
+                        },
+                        {
+
+                            "type": "jsonpath",
+                            "expression": "$[*].id",
+                            "variable": "check_id_arr",
+                            "array":true
+                        }
+                    ],
+                    "scripts": [
+                        
+                        {
+                            "scope":"after",
+                            "script":[
+                               
+                                "let timestamps_utc = uxs.getVar('timestamp_utc_arr');",
+                                "let max_ts_utc = timestamps_utc.reduce(function(a, b) {",
+                                    "return a > b ? a:b;",
+                                "});",
+                                "uxs.setVar('max_ts_utc', max_ts_utc)"
+                            ]
+        
+                        }
+        
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value": "{{check_id_arr}}",
+                            "description": "Must return at least one check",
+                            "expression": "value.length > 0",
+                            "failStep": true
+                        }
+                    ]
+
+                }
+            ]
+        },
+        {
+            "stepName": "Run Checks",
+            "disabled": false,
+            "iterator": {
+                "varName": "checkId",
+                "value": "{{check_id_arr}}"
+            },
+            "requests": [
+                {
+                    "config": {
+                        "url": "/v3/Checks/{{checkId}}/job",
+                        "method": "post",
+                        "params": {
+                            "auth_ticket": "{{auth_ticket}}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "stepName": "Poll for new results",
+            "disabled": false,
+            "idleBetweenRequests": "{{requestIdleTime}}",
+            "iterator": {
+                "value": "{{pollCount}}",
+                "waitForValidResponse": true
+            },
+            "requests": [
+                {
+                    "config": {
+                        "url": "/v3/Checks",
+                        "params": {
+                            "auth_ticket": "{{auth_ticket}}",
+                            "include_tag" : "{{tagName}}~{{tagValue}}",
+                            "enabled":"true"
+                          }
+                       
+                    },
+                    "extractors": [
+                        {
+
+                            "type": "jsonpath",
+                            "expression": "$[*].timestamp_utc",
+                            "variable": "timestamp_utc_arr",
+                            "array":true
+                        },
+                        {
+
+                            "type": "jsonpath",
+                            "expression": "$[*].severity",
+                            "variable": "severity_arr",
+                            "array":true
+                        }
+                        
+                       
+                    ],
+                    "scripts": [
+                        
+                        {
+                            "scope":"after",
+                            "script":[
+                               
+                                "let timestamps_utc = uxs.getVar('timestamp_utc_arr');",
+                                "let min_ts_utc = timestamps_utc.reduce(function(a, b) {",
+                                    "return a < b ? a:b;",
+                                "});",
+                                "uxs.setVar('min_ts_utc', min_ts_utc);",
+                                "let severity_arr = uxs.getVar('severity_arr');",
+                                " let ok_count = severity_arr.filter(function(item){",
+                                    "if (item ==='I')",
+                                      "return true;",
+                                    "else",
+                                      "return false;",
+                                    "});",
+                                    " let w_count = severity_arr.filter(function(item){",
+                                    "if (item ==='W')",
+                                      "return true;",
+                                    "else",
+                                      "return false;",
+                                    "});",
+                                    "let percentSuccess= (ok_count.length+ (w_count.length/2))/timestamps_utc.length * 100; ",
+                                    "uxs.setVar('percentSuccess', percentSuccess );"
+                            ]
+        
+                        }
+        
+                    ],
+                    "assertions": [
+                        {
+                            "type": "javaScript",
+                            "value": "{{min_ts_utc}}",
+                            "description": "Looking for new results from checks after running the checks.",
+                            "expression": "value >= '{{max_ts_utc}}'",
+                            "failStep": true
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

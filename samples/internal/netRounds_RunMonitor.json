@@ -1,6 +1,6 @@
 {
     "testName": "Run a netrounds monitor",
-    "description": "Run a netFRounds monitor and return SLA",
+    "description": "Run a netRounds monitor and return SLA",
     "variables": [
         {
             "key": "account",
