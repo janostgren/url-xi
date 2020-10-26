@@ -256,7 +256,7 @@ export class PrePostProcessors extends TestBase implements IScriptingAPI {
         let jsEval: string = Array.isArray(script.script) ? script.script.join("\n"):script.script
         let uxs: IScriptingAPI = this
         try {
-            this._logger.debug("Before script: scope=%s , eval=%s", script.scope, jsEval)
+            this._logger.trace("Before script: scope=%s , eval=%s", script.scope, jsEval)
             eval(jsEval)
 
 
@@ -276,7 +276,7 @@ export class PrePostProcessors extends TestBase implements IScriptingAPI {
             responseBody= JSON.stringify(responseBody)
         
         try {
-            this._logger.debug("After script: scope=%s , eval=%s", script.scope, jsEval)
+            this._logger.trace("After script: scope=%s , eval=%s", script.scope, jsEval)
             eval(jsEval)
 
         }

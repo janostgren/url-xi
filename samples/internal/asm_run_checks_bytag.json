@@ -6,7 +6,8 @@
             "key": "auth_ticket",
             "type": "string",
             "usage": "input",
-            "value": "EC0210F5-71E1-4BAD-A8DD-5D14C5DC32BC"
+            "value": "EC0210F5-71E1-4BAD-A8DD-5D14C5DC32BC",
+            "hideValue": true
         },
         {
             "key": "tagName",
@@ -34,25 +35,18 @@
             "validation": "value > 999 && value <= 20000"
         },
         {
+            "key": "idleBetweenRuns",
+            "type": "number",
+            "usage": "input",
+            "value": 100,
+            "validation": "value > 99 && value <= 2000"
+        },
+        {
             "key": "pollCount",
             "type": "number",
             "usage": "input",
             "value": 12,
             "validation": "value > 0 && value <51"
-        },
-        {
-            "key": "max_ts_utc",
-            "type": "string",
-            "usage": "inResponse",
-            "value": ""
-            
-        },
-        {
-            "key": "min_ts_utc",
-            "type": "string",
-            "usage": "inResponse",
-            "value": ""
-            
         }
     ],
     "baseURL": "https://api-wpm2.apicasystem.com",
@@ -68,26 +62,22 @@
                             "include_tag" : "{{tagName}}~{{tagValue}}",
                             "enabled":"true"
                           }
-                       
                     },
                     "extractors": [
                         {
-
                             "type": "jsonpath",
                             "expression": "$[*].timestamp_utc",
                             "variable": "timestamp_utc_arr",
                             "array":true
                         },
                         {
-
                             "type": "jsonpath",
                             "expression": "$[*].id",
                             "variable": "check_id_arr",
                             "array":true
                         }
                     ],
-                    "scripts": [
-                        
+                    "scripts": [                 
                         {
                             "scope":"after",
                             "script":[
@@ -98,9 +88,7 @@
                                 "});",
                                 "uxs.setVar('max_ts_utc', max_ts_utc)"
                             ]
-        
                         }
-        
                     ],
                     "assertions": [
                         {
@@ -111,13 +99,13 @@
                             "failStep": true
                         }
                     ]
-
                 }
             ]
         },
         {
             "stepName": "Run Checks",
             "disabled": false,
+            "idleBetweenRequests": "{{idleBetweenRuns}}",
             "iterator": {
                 "varName": "checkId",
                 "value": "{{check_id_arr}}"
@@ -150,33 +138,26 @@
                             "auth_ticket": "{{auth_ticket}}",
                             "include_tag" : "{{tagName}}~{{tagValue}}",
                             "enabled":"true"
-                          }
-                       
+                          }                       
                     },
                     "extractors": [
                         {
-
                             "type": "jsonpath",
                             "expression": "$[*].timestamp_utc",
                             "variable": "timestamp_utc_arr",
                             "array":true
                         },
                         {
-
                             "type": "jsonpath",
                             "expression": "$[*].severity",
                             "variable": "severity_arr",
                             "array":true
                         }
-                        
-                       
                     ],
-                    "scripts": [
-                        
+                    "scripts": [                     
                         {
                             "scope":"after",
-                            "script":[
-                               
+                            "script":[                               
                                 "let timestamps_utc = uxs.getVar('timestamp_utc_arr');",
                                 "let min_ts_utc = timestamps_utc.reduce(function(a, b) {",
                                     "return a < b ? a:b;",
@@ -198,9 +179,7 @@
                                     "let percentSuccess= (ok_count.length+ (w_count.length/2))/timestamps_utc.length * 100; ",
                                     "uxs.setVar('percentSuccess', percentSuccess );"
                             ]
-        
                         }
-        
                     ],
                     "assertions": [
                         {
