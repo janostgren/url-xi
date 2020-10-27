@@ -1,16 +1,20 @@
-var testName = "KLKL KL  xx"
-var r = testName.replace(/\s/g, '_')
-console.info(r)
+
+function countSeverity(arr,value) {
+    let count = arr.filter(function (item) {
+        if (item === value)
+            return true;
+        else
+            return false;
+    });
+    return count.length;
+}
+
+let sevArr= ['I','I','W','F']
+
+let info = countSeverity(sevArr,'I')
+let fail = countSeverity(sevArr,'F')
+let err = countSeverity(sevArr,'E')
+let warn = countSeverity(sevArr,'W')
+console.info(info,warn,fail,err)
 
 
-let min_ts_utc = timestamps_utc.reduce(function (a, b) {
-    return Math.min(a, b);
-});
-uxs.setVar('min_ts_utc', min_ts_utc);
-let severity_arr = uxs.getVar('severity_arr');
-let ok_count = severity_arr.filter(function (item) {
-    if (item === 'I')
-        return true;
-    else
-        return false;
-});

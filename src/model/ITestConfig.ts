@@ -91,6 +91,7 @@ export interface IVariable {
     validation?:string
     unit?: string
     hideValue?:boolean
+    description?:string
 }
 
 export interface ITestConfigData extends IBaseConfigItem{

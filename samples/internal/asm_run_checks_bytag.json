@@ -47,6 +47,34 @@
             "usage": "input",
             "value": 12,
             "validation": "value > 0 && value <51"
+        },
+        {
+            "key": "infoSeverity",
+            "type": "number",
+            "usage": "inResponse",
+            "value": 0,
+            "description":"Number of successful checks"
+        },
+        {
+            "key": "warnSeverity",
+            "type": "number",
+            "usage": "inResponse",
+            "value": 0,
+            "description":"Number of checks with warning severity"
+        },
+        {
+            "key": "errorSeverity",
+            "type": "number",
+            "usage": "inResponse",
+            "value": 0,
+            "description":"Number of checks with error severity"
+        },
+        {
+            "key": "failSeverity",
+            "type": "number",
+            "usage": "inResponse",
+            "value": 0,
+            "description":"Number of checks with fail severity"
         }
     ],
     "baseURL": "https://api-wpm2.apicasystem.com",
@@ -157,27 +185,33 @@
                     "scripts": [                     
                         {
                             "scope":"after",
-                            "script":[                               
+                            "script":[   
+                                "function countSeverity(arr,value) {",
+                                    "let count = arr.filter(function (item) {",
+                                        "if (item === value)",
+                                            "return true;",
+                                       " else",
+                                            "return false;",
+                                    "});",
+                                    "return count.length;",
+                                "}",                            
                                 "let timestamps_utc = uxs.getVar('timestamp_utc_arr');",
                                 "let min_ts_utc = timestamps_utc.reduce(function(a, b) {",
                                     "return a < b ? a:b;",
                                 "});",
                                 "uxs.setVar('min_ts_utc', min_ts_utc);",
                                 "let severity_arr = uxs.getVar('severity_arr');",
-                                " let ok_count = severity_arr.filter(function(item){",
-                                    "if (item ==='I')",
-                                      "return true;",
-                                    "else",
-                                      "return false;",
-                                    "});",
-                                    " let w_count = severity_arr.filter(function(item){",
-                                    "if (item ==='W')",
-                                      "return true;",
-                                    "else",
-                                      "return false;",
-                                    "});",
-                                    "let percentSuccess= (ok_count.length+ (w_count.length/2))/timestamps_utc.length * 100; ",
-                                    "uxs.setVar('percentSuccess', percentSuccess );"
+                                "let info_count = countSeverity(severity_arr,'I')",
+                                "let warn_count = countSeverity(severity_arr,'W')",
+                                "let err_count = countSeverity(severity_arr,'E')",
+                                "let fail_count = countSeverity(severity_arr,'F')",
+                                  
+                                "let percentSuccess= (info_count+ (warn_count/2))/timestamps_utc.length * 100; ",
+                                "uxs.setVar('percentSuccess', percentSuccess );",
+                                "uxs.setVar('infoSeverity', info_count );",
+                                "uxs.setVar('warnSeverity', warn_count );",
+                                "uxs.setVar('errorSeverity', err_count );",
+                                "uxs.setVar('failSeverity', fail_count );"
                             ]
                         }
                     ],

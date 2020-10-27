@@ -5,7 +5,8 @@
             "key": "eventId",
             "type": "number",
             "usage": "inResponse",
-            "value": "'let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]'"
+            "value": "'let arr=[1,2];arr[Math.floor(Math.random() * arr.length)]'",
+            "description":" The event id"
         },
         {
             "key": "defIdleTime",

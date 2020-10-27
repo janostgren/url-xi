@@ -30,7 +30,10 @@ export const testCaseSchema = {
             },
             "hideValue": {
               "type": "boolean"
-            }
+            },
+            "description": {
+              "type": "string"
+            },
           },
           "required": [
             "key",
